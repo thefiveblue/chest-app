@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="大胸筋プロトコル" />
-  <title>Chest Protocol - 大胸筋強化ログ</title>
+  <title>Chest & Squat Protocol - 強化ログ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -35,9 +35,9 @@
     <div class="max-w-md mx-auto flex items-center justify-between gap-2">
       <div>
         <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-rose-400 to-amber-300 bg-clip-text text-transparent">
-          CHEST PROTOCOL
+          CHEST &amp; SQUAT LOG
         </h1>
-        <p class="text-[11px] text-slate-400">デクライン＆バー選択・黒猫評価搭載</p>
+        <p class="text-[11px] text-slate-400">加重デクライン・スクワット・黒猫評価搭載</p>
       </div>
       <div id="recoveryBadge" class="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
         判定中...
@@ -64,14 +64,14 @@
         </button>
       </div>
       <p id="blackCatComment" class="text-xs text-slate-100 leading-relaxed bg-slate-900/75 rounded-xl p-3 border border-slate-800">
-        ……ふっ、来たわね。前回（11/19）は＋10kgで「10, 10, 8」をやり遂げたんでしょう？ 今回はまず1レップでも上積みして、私にその成長を見せてみなさいよ、裕貴。
+        ……ふっ、スクワットまで加えるなんて欲張りね、裕貴。上も下も着るおもりでしっかり追い込んで、この私を唸らせてみなさいよ。
       </p>
     </section>
 
     <!-- Next Target Banner -->
     <section class="glass-card rounded-2xl p-4 border-l-4 border-l-rose-500 shadow-lg">
       <div class="flex justify-between items-center gap-2 mb-1">
-        <span class="text-xs font-semibold text-rose-400">NEXT TARGET</span>
+        <span id="targetLabel" class="text-xs font-semibold text-rose-400">NEXT TARGET (デクライン・プッシュアップ)</span>
         <span id="daysSinceText" class="text-xs text-slate-400 shrink-0">前回: -日前</span>
       </div>
       <div id="nextTargetDisplay" class="text-xl font-black text-white tracking-tight">
@@ -99,9 +99,25 @@
 
     <!-- Input Form -->
     <section class="glass-card rounded-2xl p-4 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-700/70 pb-2">
-        <h2 class="text-sm font-bold text-slate-200">本日のセッション記録</h2>
+      <div class="flex items-center justify-between border-b border-slate-700/70 pb-2 gap-2">
+        <h2 class="text-sm font-bold text-slate-200 shrink-0">本日のセッション記録</h2>
         <input type="date" id="workoutDate" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none focus:border-rose-500" />
+      </div>
+
+      <!-- Exercise Selector -->
+      <div>
+        <label class="block text-[11px] font-semibold text-rose-300 mb-1.5">種目を選択</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="btnChest" onclick="selectExercise('chest')"
+            class="py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-rose-600 text-white border-rose-400">
+            デクライン・プッシュアップ
+          </button>
+          <button type="button" id="btnSquat" onclick="selectExercise('squat')"
+            class="py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-slate-800 text-slate-300 border-slate-700">
+            加重スクワット
+          </button>
+        </div>
+        <input type="hidden" id="exerciseType" value="chest" />
       </div>
 
       <!-- Weight & Vest Load -->
@@ -118,8 +134,8 @@
         </div>
       </div>
 
-      <!-- Decline & Push-up Bar Selection -->
-      <div class="bg-slate-900/60 border border-slate-700/80 rounded-xl p-3 space-y-3">
+      <!-- Chest Options -->
+      <div id="chestOptionsBox" class="bg-slate-900/60 border border-slate-700/80 rounded-xl p-3 space-y-3">
         <div class="grid grid-cols-2 gap-2.5">
           <div>
             <label class="block text-[10px] font-semibold text-slate-400 mb-1">デクライン（足上げ）</label>
@@ -150,11 +166,34 @@
         </div>
       </div>
 
+      <!-- Squat Options -->
+      <div id="squatOptionsBox" class="hidden bg-slate-900/60 border border-slate-700/80 rounded-xl p-3 space-y-2.5">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-1">体幹・上半身比率</label>
+            <select id="squatFactor" onchange="updateLiveVolume()"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-bold text-amber-300 focus:outline-none focus:border-rose-500">
+              <option value="0.85">標準比率 (0.85)</option>
+              <option value="0.88" selected>体幹重心 (0.88)</option>
+              <option value="0.92">高負荷・前傾深め (0.92)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-1">しゃがみ深さ</label>
+            <select id="squatDepth" onchange="updateLiveVolume()"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-bold text-white focus:outline-none focus:border-rose-500">
+              <option value="パラレル以上（深め）" selected>パラレル以上（深め）</option>
+              <option value="ハーフ〜パラレル">ハーフ〜パラレル</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- 3 Sets Reps -->
       <div>
         <div class="flex justify-between items-center mb-1.5">
-          <label class="text-[11px] font-medium text-slate-400">プッシュアップ回数（3セット）</label>
-          <span class="text-[11px] text-rose-400 font-semibold">目標: 8〜10回</span>
+          <label id="repsLabel" class="text-[11px] font-medium text-slate-400">デクライン・プッシュアップ回数（3セット）</label>
+          <span class="text-[11px] text-rose-400 font-semibold">目標: 8〜12回</span>
         </div>
         <div class="grid grid-cols-3 gap-2.5">
           <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-2 text-center">
@@ -194,11 +233,11 @@
       <!-- Condition Selectors -->
       <div class="grid grid-cols-3 gap-2 text-xs">
         <div>
-          <label class="block text-[10px] text-slate-400 mb-1">大胸筋の張り</label>
+          <label class="block text-[10px] text-slate-400 mb-1">効き・張り感</label>
           <select id="pumpCondition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-200">
             <option value="強い">強い（満タン）</option>
             <option value="普通" selected>普通</option>
-            <option value="控えめ">控えめ（糖質不足）</option>
+            <option value="控えめ">控えめ</option>
           </select>
         </div>
         <div>
@@ -210,7 +249,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-[10px] text-slate-400 mb-1">肩・手首の痛み</label>
+          <label class="block text-[10px] text-slate-400 mb-1">関節・腰の痛み</label>
           <select id="painCondition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-200">
             <option value="なし" selected>なし（完璧）</option>
             <option value="違和感">わずかに違和感</option>
@@ -221,7 +260,7 @@
 
       <!-- Memo -->
       <div>
-        <input type="text" id="memoInput" placeholder="メモ（例：ハの字角度◎、トレ前におにぎり1個摂取など）"
+        <input type="text" id="memoInput" placeholder="メモ（例：おもり＋10kgで深さ◎、膝・腰のブレなしなど）"
           class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500" />
       </div>
 
@@ -242,17 +281,20 @@
   </main>
 
   <script>
-    const STORAGE_KEY = 'yuki_chest_protocol_v3';
+    const STORAGE_KEY = 'yuki_chest_squat_protocol_v1';
 
     const defaultLogs = [
       {
         id: 1,
         date: '2026-11-19',
+        exercise: 'chest',
         bodyWeight: 72.0,
         addedWeight: 10,
         useDecline: 'yes',
         useBar: 'yes',
         declineFactor: 0.75,
+        squatFactor: 0.88,
+        squatDepth: 'パラレル以上（深め）',
         sets: [10, 10, 8],
         pump: '控えめ',
         stomach: 'やや疲れ',
@@ -262,11 +304,14 @@
       {
         id: 2,
         date: '2026-11-15',
+        exercise: 'chest',
         bodyWeight: 74.0,
         addedWeight: 0,
         useDecline: 'yes',
         useBar: 'yes',
         declineFactor: 0.75,
+        squatFactor: 0.88,
+        squatDepth: 'パラレル以上（深め）',
         sets: [16, 15, 15],
         pump: '強い',
         stomach: '良好',
@@ -276,11 +321,14 @@
       {
         id: 3,
         date: '2026-11-05',
+        exercise: 'chest',
         bodyWeight: 73.8,
         addedWeight: 0,
         useDecline: 'yes',
         useBar: 'yes',
         declineFactor: 0.75,
+        squatFactor: 0.88,
+        squatDepth: 'パラレル以上（深め）',
         sets: [15, 15, 13],
         pump: '強い',
         stomach: '良好',
@@ -298,21 +346,57 @@
     function init() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('workoutDate').value = today;
-      handleSetupChange();
+      selectExercise('chest', false);
       renderAll();
       updateLiveVolume();
     }
 
-    function getActiveFactor(useDecline, declineFactor) {
-      if (useDecline === 'no') {
-        return 0.65; // フラット（足が床）の標準比率
+    function selectExercise(type, shouldRender = true) {
+      document.getElementById('exerciseType').value = type;
+      const btnChest = document.getElementById('btnChest');
+      const btnSquat = document.getElementById('btnSquat');
+      const chestBox = document.getElementById('chestOptionsBox');
+      const squatBox = document.getElementById('squatOptionsBox');
+      const repsLabel = document.getElementById('repsLabel');
+
+      if (type === 'squat') {
+        btnSquat.className = 'py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-amber-500 text-slate-950 border-amber-300';
+        btnChest.className = 'py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-slate-800 text-slate-300 border-slate-700';
+        chestBox.classList.add('hidden');
+        squatBox.classList.remove('hidden');
+        repsLabel.textContent = '加重スクワット回数（3セット）';
+      } else {
+        btnChest.className = 'py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-rose-600 text-white border-rose-400';
+        btnSquat.className = 'py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-slate-800 text-slate-300 border-slate-700';
+        chestBox.classList.remove('hidden');
+        squatBox.classList.add('hidden');
+        repsLabel.textContent = 'デクライン・プッシュアップ回数（3セット）';
+        handleSetupChange();
       }
-      return parseFloat(declineFactor || 0.75);
+
+      if (shouldRender) {
+        renderAll();
+        updateLiveVolume();
+      }
     }
 
-    function getSetupLabel(useDecline, useBar) {
-      const dText = useDecline === 'no' ? 'フラット(足床)' : 'デクライン(足上げ)';
-      const bText = useBar === 'no' ? 'バーなし' : 'バーあり(ハの字)';
+    function getActiveFactor(entry) {
+      if (entry.exercise === 'squat') {
+        return parseFloat(entry.squatFactor || 0.88);
+      }
+      if (entry.useDecline === 'no') {
+        return 0.65;
+      }
+      return parseFloat(entry.declineFactor || 0.75);
+    }
+
+    function getSetupLabel(entry) {
+      if (entry.exercise === 'squat') {
+        const f = parseFloat(entry.squatFactor || 0.88).toFixed(2);
+        return `スクワット(係数${f})・${entry.squatDepth || 'パラレル以上（深め）'}`;
+      }
+      const dText = entry.useDecline === 'no' ? 'フラット(足床)' : 'デクライン(足上げ)';
+      const bText = entry.useBar === 'no' ? 'バーなし' : 'バーあり(ハの字)';
       return `${dText}・${bText}`;
     }
 
@@ -323,92 +407,99 @@
       updateLiveVolume();
     }
 
-    function calcEffectiveLoad(bw, added, useDecline, declineFactor) {
-      const factor = getActiveFactor(useDecline, declineFactor);
-      return (parseFloat(bw || 72) * factor) + parseFloat(added || 0);
+    function calcEffectiveLoad(entry) {
+      const factor = getActiveFactor(entry);
+      return (parseFloat(entry.bodyWeight || 72) * factor) + parseFloat(entry.addedWeight || 0);
+    }
+
+    function getCurrentFormState() {
+      return {
+        exercise: document.getElementById('exerciseType').value,
+        bodyWeight: parseFloat(document.getElementById('bodyWeight').value) || 72,
+        addedWeight: parseFloat(document.getElementById('addedWeight').value) || 0,
+        useDecline: document.getElementById('useDecline').value,
+        useBar: document.getElementById('useBar').value,
+        declineFactor: parseFloat(document.getElementById('declineFactor').value) || 0.75,
+        squatFactor: parseFloat(document.getElementById('squatFactor').value) || 0.88,
+        squatDepth: document.getElementById('squatDepth').value,
+        sets: [
+          parseInt(document.getElementById('set1').value) || 0,
+          parseInt(document.getElementById('set2').value) || 0,
+          parseInt(document.getElementById('set3').value) || 0
+        ],
+        pump: document.getElementById('pumpCondition').value,
+        stomach: document.getElementById('stomachCondition').value,
+        pain: document.getElementById('painCondition').value
+      };
     }
 
     function updateLiveVolume() {
-      const bw = parseFloat(document.getElementById('bodyWeight').value) || 72;
-      const added = parseFloat(document.getElementById('addedWeight').value) || 0;
-      const useDecline = document.getElementById('useDecline').value;
-      const useBar = document.getElementById('useBar').value;
-      const declineFactor = parseFloat(document.getElementById('declineFactor').value) || 0.75;
-
-      const s1 = parseInt(document.getElementById('set1').value) || 0;
-      const s2 = parseInt(document.getElementById('set2').value) || 0;
-      const s3 = parseInt(document.getElementById('set3').value) || 0;
-      const totalReps = s1 + s2 + s3;
-
-      const singleLoad = calcEffectiveLoad(bw, added, useDecline, declineFactor);
+      const state = getCurrentFormState();
+      const totalReps = state.sets.reduce((a, b) => a + b, 0);
+      const singleLoad = calcEffectiveLoad(state);
       const totalVol = Math.round(singleLoad * totalReps);
 
       document.getElementById('singleRepLoad').textContent = singleLoad.toFixed(1);
-      document.getElementById('setupSummaryText').textContent = getSetupLabel(useDecline, useBar);
+      document.getElementById('setupSummaryText').textContent = getSetupLabel(state);
       document.getElementById('liveTotalVolume').textContent = totalVol.toLocaleString();
     }
 
-    function generateBlackCatComment(entry, prevEntry) {
+    function generateBlackCatComment(entry, prevSameExerciseEntry) {
       const totalReps = entry.sets.reduce((a, b) => a + b, 0);
-      const prevReps = prevEntry ? prevEntry.sets.reduce((a, b) => a + b, 0) : totalReps;
-      const singleLoad = calcEffectiveLoad(entry.bodyWeight, entry.addedWeight, entry.useDecline, entry.declineFactor).toFixed(1);
-      const setupLabel = getSetupLabel(entry.useDecline, entry.useBar);
+      const prevReps = prevSameExerciseEntry ? prevSameExerciseEntry.sets.reduce((a, b) => a + b, 0) : totalReps;
+      const singleLoad = calcEffectiveLoad(entry).toFixed(1);
+      const setupLabel = getSetupLabel(entry);
+      const exName = entry.exercise === 'squat' ? '加重スクワット' : 'デクライン・プッシュアップ';
 
       let mood = '冷静・鋭い査定';
       let parts = [];
 
       if (entry.pain === '痛みあり') {
         mood = '厳重警戒（休養指令）';
-        parts.push(`肩や手首に「痛みあり」ですって？ 痛みを押し切って潰れたら本末転倒よ、裕貴。無理せず休養とフォーム見直しを優先しなさい。`);
+        parts.push(`${exName}で関節や腰に「痛みあり」ですって？ 痛みを押し切って潰れたら本末転倒よ、裕貴。無理せず休養とフォーム見直しを優先しなさい。`);
       } else if (entry.pain === '違和感') {
         mood = '慎重モード';
-        parts.push(`わずかに違和感があるようね。${setupLabel}の角度と肘の軌道を確認して、無理な踏ん張りは控えなさい。`);
+        parts.push(`わずかに違和感があるようね。${setupLabel}の軌道と軸を確認して、無理な踏ん張りは控えなさい。`);
       } else {
-        if (prevEntry && entry.addedWeight >= prevEntry.addedWeight && totalReps > prevReps) {
+        if (prevSameExerciseEntry && entry.addedWeight >= prevSameExerciseEntry.addedWeight && totalReps > prevReps) {
           mood = '上機嫌（成長認定）';
           parts.push(`……ふっ、やったじゃない。${setupLabel}・1回実効${singleLoad}kgで合計${totalReps}レップ（前回比＋${totalReps - prevReps}回）とは見事な伸びよ。`);
-        } else if (prevEntry && totalReps === prevReps) {
+        } else if (prevSameExerciseEntry && totalReps === prevReps) {
           mood = '手厳しい激励';
           parts.push(`${setupLabel}で合計${totalReps}レップ、前回と並びね。悪くはないけれど、もう1レップ搾り出す余地があったんじゃないかしら？`);
         } else {
           mood = '冷静な分析';
-          parts.push(`${setupLabel}・1回実効${singleLoad}kg・合計${totalReps}レップでの記録ね。張りがない日でも機械的張力は入っているわ。`);
+          parts.push(`${setupLabel}・1回実効${singleLoad}kg・合計${totalReps}レップでの記録ね。着るおもりの刺激をしっかり効かせていきなさい。`);
         }
       }
 
-      if (entry.useDecline === 'no') {
-        parts.push(`今日はデクラインなしのフラット選択ね。負荷を逃がしたい日や調整日なら理にかなっているわ。`);
-      } else if (entry.useBar === 'no') {
-        parts.push(`プッシュアップバーを使わなかったのね。手首や肩の角度に無理が出ていないかだけはしっかり確認しなさい。`);
+      if (entry.exercise === 'chest') {
+        if (entry.useDecline === 'no') {
+          parts.push(`今日はデクラインなしのフラット選択ね。調整日や軽めの日なら理にかなっているわ。`);
+        } else if (entry.useBar === 'no') {
+          parts.push(`プッシュアップバーを使わなかったのね。手首や肩の角度に無理が出ていないか確認しなさい。`);
+        }
+      } else {
+        parts.push(`下半身は筋量が多い分、呼吸と体幹の固定が命よ。着るおもりで重心がブレないよう丁寧にしゃがみなさい。`);
       }
 
       if (entry.stomach === '不調' || entry.stomach === 'やや疲れ') {
         parts.push(`胃腸が「${entry.stomach}」なら、固形物を無理に詰め込まず分食や消化に優しいタンパク質でリカバリーしなさい。`);
       } else if (entry.pump === '控えめ' && entry.bodyWeight <= 72.5) {
-        parts.push(`体重${entry.bodyWeight}kgで張りが控えめなのはグリコーゲンと水分が少し抜けているサインよ。落とすペースには気をつけなさい。`);
+        parts.push(`体重${entry.bodyWeight}kgで効きが控えめなのはエネルギー不足のサインよ。落とすペースには気をつけなさい。`);
       }
 
       return { mood, text: parts.join(' ') };
     }
 
     function refreshCatComment() {
-      const currentEntry = {
-        bodyWeight: parseFloat(document.getElementById('bodyWeight').value) || 72.0,
-        addedWeight: parseFloat(document.getElementById('addedWeight').value) || 0,
-        useDecline: document.getElementById('useDecline').value,
-        useBar: document.getElementById('useBar').value,
-        declineFactor: parseFloat(document.getElementById('declineFactor').value) || 0.75,
-        sets: [
-          parseInt(document.getElementById('set1').value) || (logs[0]?.sets[0] || 10),
-          parseInt(document.getElementById('set2').value) || (logs[0]?.sets[1] || 10),
-          parseInt(document.getElementById('set3').value) || (logs[0]?.sets[2] || 9)
-        ],
-        pump: document.getElementById('pumpCondition').value,
-        stomach: document.getElementById('stomachCondition').value,
-        pain: document.getElementById('painCondition').value
-      };
-      const prev = logs[0] || null;
-      const res = generateBlackCatComment(currentEntry, prev);
+      const current = getCurrentFormState();
+      const repFallback = logs.find(l => l.exercise === current.exercise)?.sets || [10, 10, 9];
+      if (!current.sets[0] && !current.sets[1] && !current.sets[2]) {
+        current.sets = [...repFallback];
+      }
+      const prevSame = logs.find(l => l.exercise === current.exercise) || null;
+      const res = generateBlackCatComment(current, prevSame);
       document.getElementById('catMoodTag').textContent = `モード: ${res.mood}`;
       document.getElementById('blackCatComment').textContent = res.text;
     }
@@ -417,16 +508,21 @@
       logs.sort((a, b) => new Date(b.date) - new Date(a.date));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
 
-      if (logs.length > 0) {
-        const latest = logs[0];
-        const lastDate = new Date(latest.date);
+      const currentEx = document.getElementById('exerciseType').value;
+      const exLogs = logs.filter(l => l.exercise === currentEx);
+      const latestAny = logs[0] || null;
+      const latestEx = exLogs[0] || null;
+      const prevEx = exLogs[1] || null;
+
+      if (latestAny) {
+        const lastDate = new Date(latestAny.date);
         const now = new Date();
         lastDate.setHours(0, 0, 0, 0);
         now.setHours(0, 0, 0, 0);
         const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
         const restDays = Math.max(0, diffDays - 1);
 
-        document.getElementById('daysSinceText').textContent = `前回: ${diffDays}日前 (${latest.date.slice(5)})`;
+        document.getElementById('daysSinceText').textContent = `前回: ${diffDays}日前 (${latestAny.date.slice(5)})`;
 
         const badge = document.getElementById('recoveryBadge');
         if (diffDays >= 4) {
@@ -437,21 +533,26 @@
           badge.textContent = `超回復中（あと${remain}日）`;
           badge.className = 'shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
         }
+      }
 
-        const nextSets = [...latest.sets];
-        let nextAdded = latest.addedWeight;
+      const exTitle = currentEx === 'squat' ? '加重スクワット' : 'デクライン・プッシュアップ';
+      document.getElementById('targetLabel').textContent = `NEXT TARGET (${exTitle})`;
+
+      if (latestEx) {
+        const nextSets = [...latestEx.sets];
+        let nextAdded = latestEx.addedWeight;
         let advice = '';
 
         if (nextSets[0] >= 10 && nextSets[1] >= 10 && nextSets[2] >= 10) {
           nextAdded += 2.5;
           nextSets[0] = 8; nextSets[1] = 8; nextSets[2] = 8;
-          advice = `3セット10回完全制覇！着るおもりを +${nextAdded}kg にして8回×3セットへ進みましょう。`;
+          advice = `${exTitle}3セット10回達成！着るおもりを +${nextAdded}kg にして8回×3セットへ進みましょう。`;
         } else {
           const minVal = Math.min(...nextSets);
           const idx = nextSets.lastIndexOf(minVal);
           nextSets[idx] += 1;
           const totalTarget = nextSets.reduce((a, b) => a + b, 0);
-          advice = `前回「${latest.sets.join(', ')}」を完遂。今回は合計${totalTarget}レップ（＋1回更新）がターゲットです。`;
+          advice = `前回「${latestEx.sets.join(', ')}」を完遂。今回は合計${totalTarget}レップ（＋1回更新）がターゲットです。`;
         }
 
         document.getElementById('nextTargetDisplay').textContent = `目標: ${nextSets.join(', ')} (+${nextAdded}kg)`;
@@ -460,36 +561,56 @@
         document.getElementById('set2').placeholder = nextSets[1];
         document.getElementById('set3').placeholder = nextSets[2];
         document.getElementById('addedWeight').value = nextAdded;
-        document.getElementById('bodyWeight').value = latest.bodyWeight;
+        document.getElementById('bodyWeight').value = latestEx.bodyWeight;
 
-        document.getElementById('useDecline').value = latest.useDecline || 'yes';
-        document.getElementById('useBar').value = latest.useBar || 'yes';
-        if (latest.declineFactor) {
-          document.getElementById('declineFactor').value = String(latest.declineFactor);
+        if (currentEx === 'chest') {
+          document.getElementById('useDecline').value = latestEx.useDecline || 'yes';
+          document.getElementById('useBar').value = latestEx.useBar || 'yes';
+          if (latestEx.declineFactor) {
+            document.getElementById('declineFactor').value = String(latestEx.declineFactor);
+          }
+          handleSetupChange();
+        } else {
+          if (latestEx.squatFactor) {
+            document.getElementById('squatFactor').value = String(latestEx.squatFactor);
+          }
+          if (latestEx.squatDepth) {
+            document.getElementById('squatDepth').value = latestEx.squatDepth;
+          }
         }
-        handleSetupChange();
 
-        const initialCat = generateBlackCatComment(latest, logs[1] || null);
-        document.getElementById('catMoodTag').textContent = `モード: ${initialCat.mood}`;
-        document.getElementById('blackCatComment').textContent = initialCat.text;
+        const catRes = generateBlackCatComment(latestEx, prevEx);
+        document.getElementById('catMoodTag').textContent = `モード: ${catRes.mood}`;
+        document.getElementById('blackCatComment').textContent = catRes.text;
+      } else {
+        document.getElementById('nextTargetDisplay').textContent = `目標: 10, 10, 10 (+10kg)`;
+        document.getElementById('targetAdvice').textContent = `${exTitle}の初回記録を入力しましょう。着るおもりの重さとフォームを安定させて3セット完遂を目指します。`;
+        document.getElementById('set1').placeholder = 10;
+        document.getElementById('set2').placeholder = 10;
+        document.getElementById('set3').placeholder = 10;
       }
 
       const listEl = document.getElementById('historyList');
       listEl.innerHTML = logs.map(item => {
-        const useDecline = item.useDecline || 'yes';
-        const useBar = item.useBar || 'yes';
-        const factor = getActiveFactor(useDecline, item.declineFactor || 0.75);
+        const ex = item.exercise || 'chest';
+        const exBadge = ex === 'squat'
+          ? '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">スクワット</span>'
+          : '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/30">デクライン胸</span>';
+
+        const factor = getActiveFactor(item);
         const totalReps = item.sets.reduce((a, b) => a + b, 0);
-        const vol = Math.round(calcEffectiveLoad(item.bodyWeight, item.addedWeight, useDecline, factor) * totalReps);
+        const vol = Math.round(calcEffectiveLoad(item) * totalReps);
+
         return `
           <div class="glass-card rounded-xl p-3.5 space-y-2">
             <div class="flex justify-between items-center">
-              <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs font-bold text-slate-300">${item.date}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${item.addedWeight > 0 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-700 text-slate-300'}">
-                  ${item.addedWeight > 0 ? '+' + item.addedWeight + 'kg おもり' : 'おもりなし'}
+                ${exBadge}
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-amber-300">
+                  おもり +${item.addedWeight}kg
                 </span>
-                <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-amber-300">
+                <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">
                   係数 ${factor.toFixed(2)}
                 </span>
               </div>
@@ -506,8 +627,8 @@
             </div>
             <div class="flex flex-wrap gap-1.5 text-[10px]">
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">体重 ${item.bodyWeight}kg</span>
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-rose-300">${getSetupLabel(useDecline, useBar)}</span>
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">張り: ${item.pump}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-rose-300">${getSetupLabel(item)}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">効き: ${item.pump}</span>
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">胃腸: ${item.stomach}</span>
               <span class="px-2 py-0.5 rounded bg-slate-800 ${item.pain === 'なし' ? 'text-emerald-300' : 'text-amber-300'}">痛み: ${item.pain}</span>
             </div>
@@ -519,17 +640,9 @@
 
     function saveWorkout() {
       const date = document.getElementById('workoutDate').value;
-      const bodyWeight = parseFloat(document.getElementById('bodyWeight').value) || 72.0;
-      const addedWeight = parseFloat(document.getElementById('addedWeight').value) || 0;
-      const useDecline = document.getElementById('useDecline').value;
-      const useBar = document.getElementById('useBar').value;
-      const declineFactor = parseFloat(document.getElementById('declineFactor').value) || 0.75;
+      const state = getCurrentFormState();
 
-      const s1 = parseInt(document.getElementById('set1').value);
-      const s2 = parseInt(document.getElementById('set2').value);
-      const s3 = parseInt(document.getElementById('set3').value);
-
-      if (!s1 && !s2 && !s3) {
+      if (!state.sets[0] && !state.sets[1] && !state.sets[2]) {
         alert('少なくとも1セットの回数を入力してください！');
         return;
       }
@@ -537,15 +650,7 @@
       const newLog = {
         id: Date.now(),
         date,
-        bodyWeight,
-        addedWeight,
-        useDecline,
-        useBar,
-        declineFactor,
-        sets: [s1 || 0, s2 || 0, s3 || 0],
-        pump: document.getElementById('pumpCondition').value,
-        stomach: document.getElementById('stomachCondition').value,
-        pain: document.getElementById('painCondition').value,
+        ...state,
         memo: document.getElementById('memoInput').value.trim()
       };
 
