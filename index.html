@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="大胸筋プロトコル" />
+  <title>Chest Protocol - 大胸筋強化ログ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: 90px;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-rose-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 glass-card border-b border-slate-800 px-4 py-3 pt-safe">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-rose-400 to-amber-300 bg-clip-text text-transparent">
+          CHEST PROTOCOL
+        </h1>
+        <p class="text-[11px] text-slate-400">加重デクライン・ダブルプログレッション</p>
+      </div>
+      <div id="recoveryBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+        判定中...
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+
+    <!-- Next Target Banner -->
+    <section class="glass-card rounded-2xl p-4 border-l-4 border-l-rose-500 shadow-lg">
+      <div class="flex justify-between items-start mb-1">
+        <span class="text-xs font-semibold uppercase tracking-wider text-rose-400">NEXT TARGET (ダブルプログレッション)</span>
+        <span id="daysSinceText" class="text-xs text-slate-400">前回: -日前</span>
+      </div>
+      <div id="nextTargetDisplay" class="text-xl font-black text-white tracking-tight">
+        目標: 10, 10, 9 (+10kg)
+      </div>
+      <p id="targetAdvice" class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+        前回「10, 10, 8」を完遂。3セット目で＋1レップ（計29回）を目指しましょう。
+      </p>
+    </section>
+
+    <!-- Interval Timer -->
+    <section class="glass-card rounded-2xl p-3.5 flex items-center justify-between">
+      <div>
+        <div class="text-[11px] font-medium text-slate-400">セット間レストタイマー（推奨 3:00〜4:00）</div>
+        <div id="timerDisplay" class="text-2xl font-mono font-bold text-amber-300 tracking-wider">03:00</div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="setTimerPreset(180)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">3分</button>
+        <button onclick="setTimerPreset(240)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">4分</button>
+        <button id="timerToggleBtn" onclick="toggleTimer()" class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white shadow active:scale-95">
+          開始
+        </button>
+      </div>
+    </section>
+
+    <!-- Input Form -->
+    <section class="glass-card rounded-2xl p-4 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-700/70 pb-2">
+        <h2 class="text-sm font-bold text-slate-200">本日のセッション記録</h2>
+        <input type="date" id="workoutDate" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none focus:border-rose-500" />
+      </div>
+
+      <!-- Weight & Load -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">体重 (kg) <span class="text-emerald-400">目安72〜73.5</span></label>
+          <input type="number" step="0.1" id="bodyWeight" value="72.0" oninput="updateLiveVolume()"
+            class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-base font-bold text-white focus:outline-none focus:border-rose-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">加重プレート/ベスト (kg)</label>
+          <input type="number" step="0.5" id="addedWeight" value="10" oninput="updateLiveVolume()"
+            class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-base font-bold text-amber-300 focus:outline-none focus:border-rose-500" />
+        </div>
+      </div>
+
+      <!-- 3 Sets Reps -->
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="text-[11px] font-medium text-slate-400">デクライン・プッシュアップ（ハの字・深可動域）</label>
+          <span class="text-[11px] text-rose-400 font-semibold">目標: 8〜10回</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-2 text-center">
+            <span class="block text-[10px] text-slate-400 mb-1">SET 1</span>
+            <input type="number" id="set1" placeholder="10" oninput="updateLiveVolume()"
+              class="w-full bg-transparent text-center text-xl font-black text-white focus:outline-none" />
+          </div>
+          <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-2 text-center">
+            <span class="block text-[10px] text-slate-400 mb-1">SET 2</span>
+            <input type="number" id="set2" placeholder="10" oninput="updateLiveVolume()"
+              class="w-full bg-transparent text-center text-xl font-black text-white focus:outline-none" />
+          </div>
+          <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-2 text-center">
+            <span class="block text-[10px] text-slate-400 mb-1">SET 3</span>
+            <input type="number" id="set3" placeholder="9" oninput="updateLiveVolume()"
+              class="w-full bg-transparent text-center text-xl font-black text-white focus:outline-none" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Effective Load Calculation -->
+      <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-700/80 flex items-center justify-between">
+        <div>
+          <div class="text-[11px] text-slate-400">実質総負荷量 (体重×0.75 + 加重) × 回数</div>
+          <div class="text-[10px] text-slate-500">1回あたりの実効負荷: <span id="singleRepLoad" class="text-slate-300 font-semibold">64.0</span> kg</div>
+        </div>
+        <div class="text-right">
+          <span id="liveTotalVolume" class="text-xl font-black text-emerald-400">0</span>
+          <span class="text-xs text-slate-400 ml-0.5">kg</span>
+        </div>
+      </div>
+
+      <!-- Condition Selectors -->
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-1">大胸筋の張り</label>
+          <select id="pumpCondition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-200">
+            <option value="強い">強い（満タン）</option>
+            <option value="普通" selected>普通</option>
+            <option value="控えめ">控えめ（糖質不足）</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-1">胃腸コンディション</label>
+          <select id="stomachCondition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-200">
+            <option value="良好" selected>良好</option>
+            <option value="やや疲れ">やや疲れ（分食推奨）</option>
+            <option value="不調">不調（消化優先）</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-1">肩・手首の痛み</label>
+          <select id="painCondition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-200">
+            <option value="なし" selected>なし（完璧）</option>
+            <option value="違和感">わずかに違和感</option>
+            <option value="痛みあり">痛みあり（休養）</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Memo -->
+      <div>
+        <input type="text" id="memoInput" placeholder="メモ（例：ハの字角度◎、トレ前におにぎり1個摂取など）"
+          class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500" />
+      </div>
+
+      <button onclick="saveWorkout()" class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-sm font-extrabold text-white shadow-lg shadow-rose-950/50 active:scale-[0.98] transition">
+        記録を保存する
+      </button>
+    </section>
+
+    <!-- History List -->
+    <section class="space-y-2.5">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-sm font-bold text-slate-200">トレーニング履歴</h2>
+        <button onclick="exportData()" class="text-[11px] text-slate-400 underline hover:text-slate-200">バックアップコピー</button>
+      </div>
+      <div id="historyList" class="space-y-2.5"></div>
+    </section>
+
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'yuki_chest_protocol_v1';
+
+    const defaultLogs = [
+      {
+        id: 1,
+        date: '2026-11-19',
+        bodyWeight: 72.0,
+        addedWeight: 10,
+        sets: [10, 10, 8],
+        pump: '控えめ',
+        stomach: 'やや疲れ',
+        pain: 'なし',
+        memo: '初＋10kg加重！痛みゼロでギリギリまで追い込み成功'
+      },
+      {
+        id: 2,
+        date: '2026-11-15',
+        bodyWeight: 74.0,
+        addedWeight: 0,
+        sets: [16, 15, 15],
+        pump: '強い',
+        stomach: '良好',
+        pain: 'なし',
+        memo: '自重46レップ達成。次回から＋10kg加重フェーズへ移行'
+      },
+      {
+        id: 3,
+        date: '2026-11-05',
+        bodyWeight: 73.8,
+        addedWeight: 0,
+        sets: [15, 15, 13],
+        pump: '強い',
+        stomach: '良好',
+        pain: 'なし',
+        memo: 'ハの字セッティング＆深可動域フォーム定着'
+      }
+    ];
+
+    let logs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultLogs;
+
+    // Timer variables
+    let timerSeconds = 180;
+    let timerInterval = null;
+    let isRunning = false;
+
+    function init() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('workoutDate').value = today;
+      renderAll();
+      updateLiveVolume();
+    }
+
+    function calcEffectiveLoad(bw, added) {
+      return (parseFloat(bw || 72) * 0.75) + parseFloat(added || 0);
+    }
+
+    function updateLiveVolume() {
+      const bw = parseFloat(document.getElementById('bodyWeight').value) || 72;
+      const added = parseFloat(document.getElementById('addedWeight').value) || 0;
+      const s1 = parseInt(document.getElementById('set1').value) || 0;
+      const s2 = parseInt(document.getElementById('set2').value) || 0;
+      const s3 = parseInt(document.getElementById('set3').value) || 0;
+      const totalReps = s1 + s2 + s3;
+      const singleLoad = calcEffectiveLoad(bw, added);
+      const totalVol = Math.round(singleLoad * totalReps);
+
+      document.getElementById('singleRepLoad').textContent = singleLoad.toFixed(1);
+      document.getElementById('liveTotalVolume').textContent = totalVol.toLocaleString();
+    }
+
+    function renderAll() {
+      logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+
+      if (logs.length > 0) {
+        const latest = logs[0];
+        // Recovery calculation (中3日 = 4日後にトレ解禁)
+        const lastDate = new Date(latest.date);
+        const now = new Date();
+        lastDate.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+        const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+        const restDays = Math.max(0, diffDays - 1);
+
+        document.getElementById('daysSinceText').textContent = `前回: ${diffDays}日前 (${latest.date.slice(5)})`;
+
+        const badge = document.getElementById('recoveryBadge');
+        if (diffDays >= 4) {
+          badge.textContent = `中${restDays}日経過・トレ解禁！`;
+          badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        } else {
+          const remain = 4 - diffDays;
+          badge.textContent = `超回復中（あと${remain}日）`;
+          badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        }
+
+        // Double progression target logic
+        const nextSets = [...latest.sets];
+        let nextAdded = latest.addedWeight;
+        let advice = '';
+
+        if (nextSets[0] >= 10 && nextSets[1] >= 10 && nextSets[2] >= 10) {
+          nextAdded += 2.5;
+          nextSets[0] = 8; nextSets[1] = 8; nextSets[2] = 8;
+          advice = `前回3セット10回完全制覇！重量を +${nextAdded}kg に引き上げて8回×3セットに挑戦しましょう。`;
+        } else {
+          // Increment the lowest set by 1
+          const minVal = Math.min(...nextSets);
+          const idx = nextSets.lastIndexOf(minVal);
+          nextSets[idx] += 1;
+          const totalTarget = nextSets.reduce((a, b) => a + b, 0);
+          advice = `前回「${latest.sets.join(', ')}」を完遂。今回は合計${totalTarget}レップ（＋1回更新）がターゲットです。`;
+        }
+
+        document.getElementById('nextTargetDisplay').textContent = `目標: ${nextSets.join(', ')} (+${nextAdded}kg)`;
+        document.getElementById('targetAdvice').textContent = advice;
+        document.getElementById('set1').placeholder = nextSets[0];
+        document.getElementById('set2').placeholder = nextSets[1];
+        document.getElementById('set3').placeholder = nextSets[2];
+        document.getElementById('addedWeight').value = nextAdded;
+        document.getElementById('bodyWeight').value = latest.bodyWeight;
+      }
+
+      const listEl = document.getElementById('historyList');
+      listEl.innerHTML = logs.map(item => {
+        const totalReps = item.sets.reduce((a, b) => a + b, 0);
+        const vol = Math.round(calcEffectiveLoad(item.bodyWeight, item.addedWeight) * totalReps);
+        return `
+          <div class="glass-card rounded-xl p-3.5 space-y-2">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-300">${item.date}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${item.addedWeight > 0 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-700 text-slate-300'}">
+                  ${item.addedWeight > 0 ? '+' + item.addedWeight + 'kg 加重' : '自重のみ'}
+                </span>
+              </div>
+              <button onclick="deleteLog(${item.id})" class="text-[11px] text-slate-500 hover:text-rose-400">削除</button>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <div class="text-lg font-black text-white tracking-wide">
+                ${item.sets.join(' - ')} <span class="text-xs font-normal text-slate-400">回 (計${totalReps}回)</span>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-slate-400">実質負荷: </span>
+                <span class="text-sm font-extrabold text-emerald-400">${vol.toLocaleString()} kg</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1.5 text-[10px]">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">体重 ${item.bodyWeight}kg</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">張り: ${item.pump}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">胃腸: ${item.stomach}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 ${item.pain === 'なし' ? 'text-emerald-300' : 'text-amber-300'}">痛み: ${item.pain}</span>
+            </div>
+            ${item.memo ? `<p class="text-[11px] text-slate-400 bg-slate-900/60 rounded-lg px-2.5 py-1.5">${item.memo}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function saveWorkout() {
+      const date = document.getElementById('workoutDate').value;
+      const bodyWeight = parseFloat(document.getElementById('bodyWeight').value) || 72.0;
+      const addedWeight = parseFloat(document.getElementById('addedWeight').value) || 0;
+      const s1 = parseInt(document.getElementById('set1').value);
+      const s2 = parseInt(document.getElementById('set2').value);
+      const s3 = parseInt(document.getElementById('set3').value);
+
+      if (!s1 && !s2 && !s3) {
+        alert('少なくとも1セットの回数を入力してください！');
+        return;
+      }
+
+      const newLog = {
+        id: Date.now(),
+        date,
+        bodyWeight,
+        addedWeight,
+        sets: [s1 || 0, s2 || 0, s3 || 0],
+        pump: document.getElementById('pumpCondition').value,
+        stomach: document.getElementById('stomachCondition').value,
+        pain: document.getElementById('painCondition').value,
+        memo: document.getElementById('memoInput').value.trim()
+      };
+
+      logs.unshift(newLog);
+      document.getElementById('set1').value = '';
+      document.getElementById('set2').value = '';
+      document.getElementById('set3').value = '';
+      document.getElementById('memoInput').value = '';
+      renderAll();
+      updateLiveVolume();
+    }
+
+    function deleteLog(id) {
+      if (!confirm('この記録を削除しますか？')) return;
+      logs = logs.filter(l => l.id !== id);
+      renderAll();
+    }
+
+    function exportData() {
+      const json = JSON.stringify(logs, null, 2);
+      navigator.clipboard.writeText(json).then(() => {
+        alert('履歴データ（JSON）をクリップボードにコピーしました！メモ帳などに貼り付けてバックアップできます。');
+      });
+    }
+
+    // Timer Logic
+    function updateTimerDisplay() {
+      const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+      const s = String(timerSeconds % 60).padStart(2, '0');
+      document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+    }
+
+    function setTimerPreset(sec) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      timerSeconds = sec;
+      document.getElementById('timerToggleBtn').textContent = '開始';
+      updateTimerDisplay();
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timerToggleBtn');
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        btn.textContent = '再開';
+      } else {
+        isRunning = true;
+        btn.textContent = '停止';
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            btn.textContent = '完了！';
+            if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+          }
+        }, 1000);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
