@@ -66,7 +66,7 @@
 
       <div class="bg-slate-900/75 rounded-xl p-3 border border-slate-800 space-y-2">
         <p id="blackCatComment" class="text-xs text-slate-100 leading-relaxed">
-          ……ふっ、カレンダーでトレ日を管理して、過去の記録も自由に直せるようにしたわ。さあ、積み上げの質をさらに高めていきなさいよ、裕貴。
+          ……ふっ、無駄な縦長リストを削ってカレンダーに集約し、ファイル保存まで整えたわ。ますます使いやすくなったじゃない、裕貴。
         </p>
         <div id="progressionHintBox" class="pt-2 border-t border-slate-800/90 text-[11px] text-amber-300 leading-relaxed">
           <span class="font-extrabold text-amber-400">【負荷増量の示唆】</span>
@@ -295,7 +295,7 @@
       <div class="flex items-center justify-between gap-2">
         <div>
           <h2 class="text-sm font-bold text-sky-300">月間トレーニングカレンダー</h2>
-          <p class="text-[10px] text-slate-400">色マークの日をタップするとその日の履歴を表示します</p>
+          <p class="text-[10px] text-slate-400">日付を押すとその日の履歴が表示されます</p>
         </div>
         <select id="monthSelect" onchange="handleMonthChange()"
           class="bg-slate-800 text-slate-200 text-xs font-bold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-400">
@@ -321,7 +321,7 @@
       <!-- Calendar Cells -->
       <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 text-center"></div>
 
-      <!-- Selected Date Logs -->
+      <!-- Selected Date Logs (Shown on Day Tap) -->
       <div id="selectedDatePanel" class="pt-2 border-t border-slate-800 space-y-2">
         <div class="flex items-center justify-between">
           <span id="selectedDateLabel" class="text-xs font-extrabold text-slate-200">選択日: -</span>
@@ -363,14 +363,14 @@
       </p>
     </section>
 
-    <!-- Cumulative (All-Time) Evaluation Card -->
+    <!-- Cumulative (All-Time) Evaluation & File Download Card -->
     <section class="glass-card rounded-2xl p-4 border border-emerald-500/25 space-y-3">
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between gap-2">
         <div>
           <h2 class="text-sm font-bold text-emerald-300">これまでの蓄積 ＆ 黒猫の総合査定</h2>
-          <p class="text-[10px] text-slate-400">全期間の積み上げ総量と成長の軌跡</p>
+          <p class="text-[10px] text-slate-400">全期間の積み上げ総量とデータファイル保存</p>
         </div>
-        <span id="cumulativeSessionsBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+        <span id="cumulativeSessionsBadge" class="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
           累計 0回
         </span>
       </div>
@@ -389,21 +389,23 @@
       <p id="cumulativeCatEval" class="text-xs text-slate-200 bg-slate-900/75 rounded-xl p-3 border border-slate-800 leading-relaxed">
         これまでの蓄積を査定中よ。
       </p>
-    </section>
 
-    <!-- All History List -->
-    <section class="space-y-2.5">
-      <div class="flex items-center justify-between px-1">
-        <h2 class="text-sm font-bold text-slate-200">全トレーニング履歴（編集・削除可）</h2>
-        <button onclick="exportData()" class="text-[11px] text-slate-400 underline hover:text-slate-200">バックアップコピー</button>
+      <div class="flex items-center gap-2 pt-1">
+        <button type="button" onclick="downloadHistoryFile()"
+          class="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white shadow active:scale-95 transition">
+          全履歴ファイルをダウンロード (.json)
+        </button>
+        <button type="button" onclick="exportData()"
+          class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-slate-700 active:scale-95">
+          コピー
+        </button>
       </div>
-      <div id="historyList" class="space-y-2.5"></div>
     </section>
 
   </main>
 
   <script>
-    const STORAGE_KEY = 'yuki_chest_squat_protocol_v4';
+    const STORAGE_KEY = 'yuki_chest_squat_protocol_v5';
 
     const defaultLogs = [
       {
@@ -724,7 +726,7 @@
       renderCalendarAndSelectedDay();
     }
 
-    function renderLogCardHtml(item, showEdit = true) {
+    function renderLogCardHtml(item) {
       const ex = item.exercise || 'chest';
       const exBadge = ex === 'squat'
         ? '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">スクワット</span>'
@@ -735,7 +737,7 @@
       const vol = calcEntryVolume(item);
 
       return `
-        <div class="glass-card rounded-xl p-3.5 space-y-2 border border-slate-700/80">
+        <div class="bg-slate-900/90 rounded-xl p-3.5 space-y-2 border border-slate-700/80">
           <div class="flex justify-between items-center gap-2">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs font-bold text-slate-300">${item.date}</span>
@@ -748,7 +750,7 @@
               </span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              ${showEdit ? `<button onclick="startEditLog(${item.id})" class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30 text-[11px] font-bold active:scale-95">編集</button>` : ''}
+              <button onclick="startEditLog(${item.id})" class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30 text-[11px] font-bold active:scale-95">編集</button>
               <button onclick="deleteLog(${item.id})" class="text-[11px] text-slate-500 hover:text-rose-400">削除</button>
             </div>
           </div>
@@ -768,7 +770,7 @@
             <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">胃腸: ${item.stomach}</span>
             <span class="px-2 py-0.5 rounded bg-slate-800 ${item.pain === 'なし' ? 'text-emerald-300' : 'text-amber-300'}">痛み: ${item.pain}</span>
           </div>
-          ${item.memo ? `<p class="text-[11px] text-slate-400 bg-slate-900/60 rounded-lg px-2.5 py-1.5">${item.memo}</p>` : ''}
+          ${item.memo ? `<p class="text-[11px] text-slate-400 bg-slate-950/60 rounded-lg px-2.5 py-1.5">${item.memo}</p>` : ''}
         </div>
       `;
     }
@@ -831,7 +833,7 @@
       if (dayLogs.length === 0) {
         panelLogsEl.innerHTML = `<p class="text-xs text-slate-400 bg-slate-900/60 rounded-xl p-3">この日のトレーニング記録はありません。</p>`;
       } else {
-        panelLogsEl.innerHTML = dayLogs.map(item => renderLogCardHtml(item, true)).join('');
+        panelLogsEl.innerHTML = dayLogs.map(item => renderLogCardHtml(item)).join('');
       }
     }
 
@@ -1038,9 +1040,6 @@
       populateMonthSelect();
       renderCalendarAndSelectedDay();
       renderMonthlyAndCumulative();
-
-      const listEl = document.getElementById('historyList');
-      listEl.innerHTML = logs.map(item => renderLogCardHtml(item, true)).join('');
     }
 
     function saveWorkout() {
@@ -1098,6 +1097,20 @@
       }
       logs = logs.filter(l => l.id !== id);
       renderAll();
+    }
+
+    function downloadHistoryFile() {
+      const json = JSON.stringify(logs, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const todayStr = new Date().toISOString().split('T')[0];
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `chest-squat-logs-${todayStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function exportData() {
