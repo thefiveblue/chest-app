@@ -37,7 +37,7 @@
         <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-rose-400 to-amber-300 bg-clip-text text-transparent">
           CHEST &amp; SQUAT LOG
         </h1>
-        <p class="text-[11px] text-slate-400">加重デクライン・スクワット・黒猫評価搭載</p>
+        <p class="text-[11px] text-slate-400">過去ログ追加・月間＆蓄積評価・黒猫示唆搭載</p>
       </div>
       <div id="recoveryBadge" class="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
         判定中...
@@ -47,25 +47,32 @@
 
   <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
 
-    <!-- Black Cat Evaluation Card -->
-    <section class="glass-card rounded-2xl p-4 border border-rose-500/30 shadow-lg space-y-2">
+    <!-- Black Cat Session Evaluation & Progression Card -->
+    <section class="glass-card rounded-2xl p-4 border border-rose-500/30 shadow-lg space-y-2.5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-rose-500/20 border border-rose-400/40 text-sm font-black text-rose-300">
             黒
           </span>
           <div>
-            <div class="text-xs font-extrabold text-rose-300 tracking-wide">黒猫のセッション講評</div>
-            <div id="catMoodTag" class="text-[10px] text-slate-400">待機中 — 記録を保存すると講評を更新</div>
+            <div class="text-xs font-extrabold text-rose-300 tracking-wide">黒猫の講評 ＆ 負荷増量示唆</div>
+            <div id="catMoodTag" class="text-[10px] text-slate-400">待機中 — 記録を保存すると講評＆示唆を更新</div>
           </div>
         </div>
         <button onclick="refreshCatComment()" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 active:scale-95">
           再評価
         </button>
       </div>
-      <p id="blackCatComment" class="text-xs text-slate-100 leading-relaxed bg-slate-900/75 rounded-xl p-3 border border-slate-800">
-        ……ふっ、スクワットまで加えるなんて欲張りね、裕貴。上も下も着るおもりでしっかり追い込んで、この私を唸らせてみなさいよ。
-      </p>
+
+      <div class="bg-slate-900/75 rounded-xl p-3 border border-slate-800 space-y-2">
+        <p id="blackCatComment" class="text-xs text-slate-100 leading-relaxed">
+          ……ふっ、過去ログも月間評価も蓄積査定も全部まとめて抱え込む気ね、裕貴。着るおもりでしっかり追い込んで、この私を唸らせてみなさいよ。
+        </p>
+        <div id="progressionHintBox" class="pt-2 border-t border-slate-800/90 text-[11px] text-amber-300 leading-relaxed">
+          <span class="font-extrabold text-amber-400">【負荷増量の示唆】</span>
+          <span id="progressionHintText">腕立ては12回×3セット、スクワットは15回×3セットを基準にレップを伸ばし、完遂したら着るおもりを＋2.5kg引き上げていきましょう。</span>
+        </div>
+      </div>
     </section>
 
     <!-- Next Target Banner -->
@@ -78,7 +85,7 @@
         目標: 10, 10, 9 (+10kg)
       </div>
       <p id="targetAdvice" class="text-xs text-slate-300 mt-1.5 leading-relaxed">
-        前回「10, 10, 8」を完遂。3セット目で＋1レップ（計29回）を目指しましょう。
+        腕立て基準12回×3セットを目指してステップアップしましょう。
       </p>
     </section>
 
@@ -97,11 +104,14 @@
       </div>
     </section>
 
-    <!-- Input Form -->
+    <!-- Input Form (Supports Past Dates) -->
     <section class="glass-card rounded-2xl p-4 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700/70 pb-2 gap-2">
-        <h2 class="text-sm font-bold text-slate-200 shrink-0">本日のセッション記録</h2>
-        <input type="date" id="workoutDate" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none focus:border-rose-500" />
+        <div>
+          <h2 class="text-sm font-bold text-slate-200">セッション記録・過去ログ追加</h2>
+          <p class="text-[10px] text-slate-400">日付を変更すれば過去の記録もそのまま追加できます</p>
+        </div>
+        <input type="date" id="workoutDate" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-rose-500" />
       </div>
 
       <!-- Exercise Selector -->
@@ -110,11 +120,11 @@
         <div class="grid grid-cols-2 gap-2">
           <button type="button" id="btnChest" onclick="selectExercise('chest')"
             class="py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-rose-600 text-white border-rose-400">
-            デクライン・プッシュアップ
+            デクライン腕立て (目標12回)
           </button>
           <button type="button" id="btnSquat" onclick="selectExercise('squat')"
             class="py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-slate-800 text-slate-300 border-slate-700">
-            加重スクワット
+            加重スクワット (目標15回)
           </button>
         </div>
         <input type="hidden" id="exerciseType" value="chest" />
@@ -138,11 +148,12 @@
       <div id="chestOptionsBox" class="bg-slate-900/60 border border-slate-700/80 rounded-xl p-3 space-y-3">
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block text-[10px] font-semibold text-slate-400 mb-1">デクライン（足上げ）</label>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-1">デクライン姿勢</label>
             <select id="useDecline" onchange="handleSetupChange()"
               class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-bold text-white focus:outline-none focus:border-rose-500">
               <option value="yes" selected>する（足上げ）</option>
-              <option value="no">しない（フラット）</option>
+              <option value="knee">膝つき（ニー・デクライン）</option>
+              <option value="no">しない（フラット・足床）</option>
             </select>
           </div>
           <div>
@@ -192,8 +203,8 @@
       <!-- 3 Sets Reps -->
       <div>
         <div class="flex justify-between items-center mb-1.5">
-          <label id="repsLabel" class="text-[11px] font-medium text-slate-400">デクライン・プッシュアップ回数（3セット）</label>
-          <span class="text-[11px] text-rose-400 font-semibold">目標: 8〜12回</span>
+          <label id="repsLabel" class="text-[11px] font-medium text-slate-400">デクライン腕立て回数（3セット）</label>
+          <span id="goalRangeBadge" class="text-[11px] text-rose-400 font-semibold">目標基準: 12回/セット</span>
         </div>
         <div class="grid grid-cols-3 gap-2.5">
           <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-2 text-center">
@@ -221,7 +232,7 @@
           <div class="text-[10px] text-slate-400 mt-0.5">
             1回実効負荷: <span id="singleRepLoad" class="text-amber-300 font-bold">64.0</span> kg
             <span class="text-slate-500">／</span>
-            <span id="setupSummaryText" class="text-rose-300">デクラインあり・バーあり</span>
+            <span id="setupSummaryText" class="text-rose-300">デクライン(足上げ)・バーあり(ハの字)</span>
           </div>
         </div>
         <div class="text-right shrink-0">
@@ -260,7 +271,7 @@
 
       <!-- Memo -->
       <div>
-        <input type="text" id="memoInput" placeholder="メモ（例：おもり＋10kgで深さ◎、膝・腰のブレなしなど）"
+        <input type="text" id="memoInput" placeholder="メモ（例：おもり＋10kgで深さ◎、膝つき調整など）"
           class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500" />
       </div>
 
@@ -269,10 +280,70 @@
       </button>
     </section>
 
+    <!-- Monthly Summary & Evaluation Card -->
+    <section class="glass-card rounded-2xl p-4 border border-amber-500/25 space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-bold text-amber-300">月間トレーニング履歴 ＆ 評価</h2>
+          <p class="text-[10px] text-slate-400">月別の負荷量・頻度・コンディションを黒猫が査定</p>
+        </div>
+        <select id="monthSelect" onchange="renderMonthlyAndCumulative()"
+          class="bg-slate-800 text-slate-200 text-xs font-bold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-amber-400">
+        </select>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-slate-900/80 rounded-xl p-2.5 border border-slate-800">
+          <div class="text-[10px] text-slate-400">月間セッション</div>
+          <div id="monthlySessions" class="text-base font-black text-white mt-0.5">0回</div>
+        </div>
+        <div class="bg-slate-900/80 rounded-xl p-2.5 border border-slate-800">
+          <div class="text-[10px] text-slate-400">月間合計レップ</div>
+          <div id="monthlyReps" class="text-base font-black text-rose-300 mt-0.5">0回</div>
+        </div>
+        <div class="bg-slate-900/80 rounded-xl p-2.5 border border-slate-800">
+          <div class="text-[10px] text-slate-400">月間実質総負荷</div>
+          <div id="monthlyVolume" class="text-base font-black text-emerald-400 mt-0.5">0kg</div>
+        </div>
+      </div>
+
+      <p id="monthlyCatEval" class="text-xs text-slate-200 bg-slate-900/75 rounded-xl p-3 border border-slate-800 leading-relaxed">
+        月間データを集計中よ。
+      </p>
+    </section>
+
+    <!-- Cumulative (All-Time) Evaluation Card -->
+    <section class="glass-card rounded-2xl p-4 border border-emerald-500/25 space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-emerald-300">これまでの蓄積 ＆ 黒猫の総合査定</h2>
+          <p class="text-[10px] text-slate-400">全期間の積み上げ総量と成長の軌跡</p>
+        </div>
+        <span id="cumulativeSessionsBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+          累計 0回
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800">
+          <div class="text-[10px] text-slate-400">累計実質総負荷量</div>
+          <div id="cumulativeVolume" class="text-lg font-black text-emerald-400 mt-0.5">0 kg</div>
+        </div>
+        <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800">
+          <div class="text-[10px] text-slate-400">最大おもり / 累計レップ</div>
+          <div id="cumulativeStatsSub" class="text-sm font-extrabold text-amber-300 mt-1">+0kg / 0回</div>
+        </div>
+      </div>
+
+      <p id="cumulativeCatEval" class="text-xs text-slate-200 bg-slate-900/75 rounded-xl p-3 border border-slate-800 leading-relaxed">
+        これまでの蓄積を査定中よ。
+      </p>
+    </section>
+
     <!-- History List -->
     <section class="space-y-2.5">
       <div class="flex items-center justify-between px-1">
-        <h2 class="text-sm font-bold text-slate-200">トレーニング履歴</h2>
+        <h2 class="text-sm font-bold text-slate-200">トレーニング履歴一覧</h2>
         <button onclick="exportData()" class="text-[11px] text-slate-400 underline hover:text-slate-200">バックアップコピー</button>
       </div>
       <div id="historyList" class="space-y-2.5"></div>
@@ -281,7 +352,7 @@
   </main>
 
   <script>
-    const STORAGE_KEY = 'yuki_chest_squat_protocol_v1';
+    const STORAGE_KEY = 'yuki_chest_squat_protocol_v3';
 
     const defaultLogs = [
       {
@@ -343,6 +414,10 @@
     let timerInterval = null;
     let isRunning = false;
 
+    function getGoalRepsForExercise(ex) {
+      return ex === 'squat' ? 15 : 12;
+    }
+
     function init() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('workoutDate').value = today;
@@ -358,6 +433,7 @@
       const chestBox = document.getElementById('chestOptionsBox');
       const squatBox = document.getElementById('squatOptionsBox');
       const repsLabel = document.getElementById('repsLabel');
+      const goalBadge = document.getElementById('goalRangeBadge');
 
       if (type === 'squat') {
         btnSquat.className = 'py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-amber-500 text-slate-950 border-amber-300';
@@ -365,12 +441,14 @@
         chestBox.classList.add('hidden');
         squatBox.classList.remove('hidden');
         repsLabel.textContent = '加重スクワット回数（3セット）';
+        goalBadge.textContent = '目標基準: 15回/セット';
       } else {
         btnChest.className = 'py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-rose-600 text-white border-rose-400';
         btnSquat.className = 'py-2.5 px-3 rounded-xl text-xs font-extrabold border transition active:scale-95 bg-slate-800 text-slate-300 border-slate-700';
         chestBox.classList.remove('hidden');
         squatBox.classList.add('hidden');
-        repsLabel.textContent = 'デクライン・プッシュアップ回数（3セット）';
+        repsLabel.textContent = 'デクライン腕立て回数（3セット）';
+        goalBadge.textContent = '目標基準: 12回/セット';
         handleSetupChange();
       }
 
@@ -384,8 +462,11 @@
       if (entry.exercise === 'squat') {
         return parseFloat(entry.squatFactor || 0.88);
       }
+      if (entry.useDecline === 'knee') {
+        return 0.55; // 膝つき（ニー・デクライン）目安係数
+      }
       if (entry.useDecline === 'no') {
-        return 0.65;
+        return 0.65; // フラット（足床）
       }
       return parseFloat(entry.declineFactor || 0.75);
     }
@@ -395,7 +476,10 @@
         const f = parseFloat(entry.squatFactor || 0.88).toFixed(2);
         return `スクワット(係数${f})・${entry.squatDepth || 'パラレル以上（深め）'}`;
       }
-      const dText = entry.useDecline === 'no' ? 'フラット(足床)' : 'デクライン(足上げ)';
+      let dText = 'デクライン(足上げ)';
+      if (entry.useDecline === 'knee') dText = '膝つき(ニー・デクライン)';
+      else if (entry.useDecline === 'no') dText = 'フラット(足床)';
+
       const bText = entry.useBar === 'no' ? 'バーなし' : 'バーあり(ハの字)';
       return `${dText}・${bText}`;
     }
@@ -410,6 +494,11 @@
     function calcEffectiveLoad(entry) {
       const factor = getActiveFactor(entry);
       return (parseFloat(entry.bodyWeight || 72) * factor) + parseFloat(entry.addedWeight || 0);
+    }
+
+    function calcEntryVolume(entry) {
+      const totalReps = entry.sets.reduce((a, b) => a + b, 0);
+      return Math.round(calcEffectiveLoad(entry) * totalReps);
     }
 
     function getCurrentFormState() {
@@ -444,12 +533,44 @@
       document.getElementById('liveTotalVolume').textContent = totalVol.toLocaleString();
     }
 
+    function buildProgressionHint(entry) {
+      const goalReps = getGoalRepsForExercise(entry.exercise);
+      const exLabel = entry.exercise === 'squat' ? 'スクワット' : '腕立て';
+      const singleLoad = calcEffectiveLoad(entry);
+      const gainPerRep = Math.round(singleLoad);
+      const allCleared = entry.sets[0] >= goalReps && entry.sets[1] >= goalReps && entry.sets[2] >= goalReps;
+      const drop = (entry.sets[0] || 0) - (entry.sets[2] || 0);
+
+      if (entry.pain === '痛みあり') {
+        return `今は負荷を増やす局面じゃないわ。痛みが消えるまで重量・レップともに無理をせず、回復とフォーム確認を最優先にしなさい。`;
+      }
+
+      if (entry.stomach === '不調') {
+        return `胃腸が不調なときは出力も落ちやすいわ。増量は見送り、まずは消化とリカバリーを優先して次回の土台を整えなさい。`;
+      }
+
+      if (allCleared) {
+        const nextAdded = (parseFloat(entry.addedWeight) || 0) + 2.5;
+        return `${exLabel}の目標基準（${goalReps}回×3セット）を突破したわね！次は着るおもりを「+${nextAdded}kg」に引き上げて8回×3セットから再構築するタイミングよ。`;
+      }
+
+      const minVal = Math.min(...entry.sets);
+      const targetSetNum = entry.sets.lastIndexOf(minVal) + 1;
+      let hint = `${exLabel}は${goalReps}回×3セット到達まではおもり維持が基本よ。次は「SET ${targetSetNum}」を＋1回伸ばすだけで実質総負荷が約+${gainPerRep}kg増えるわ。`;
+
+      if (drop >= 4) {
+        hint += ` 1セット目と3セット目の差が${drop}回あるから、セット間休憩を3分から4分に少し延ばして後半のレップ数を守るのも有効よ。`;
+      }
+
+      return hint;
+    }
+
     function generateBlackCatComment(entry, prevSameExerciseEntry) {
       const totalReps = entry.sets.reduce((a, b) => a + b, 0);
       const prevReps = prevSameExerciseEntry ? prevSameExerciseEntry.sets.reduce((a, b) => a + b, 0) : totalReps;
       const singleLoad = calcEffectiveLoad(entry).toFixed(1);
       const setupLabel = getSetupLabel(entry);
-      const exName = entry.exercise === 'squat' ? '加重スクワット' : 'デクライン・プッシュアップ';
+      const exName = entry.exercise === 'squat' ? '加重スクワット' : 'デクライン腕立て';
 
       let mood = '冷静・鋭い査定';
       let parts = [];
@@ -474,13 +595,13 @@
       }
 
       if (entry.exercise === 'chest') {
-        if (entry.useDecline === 'no') {
-          parts.push(`今日はデクラインなしのフラット選択ね。調整日や軽めの日なら理にかなっているわ。`);
+        if (entry.useDecline === 'knee') {
+          parts.push(`膝つき（ニー・デクライン）を選んだのね。フォームを崩さず効かせ切る調整としては賢明よ。`);
+        } else if (entry.useDecline === 'no') {
+          parts.push(`フラット選択ね。軽めの調整や土台作りなら悪くないわ。`);
         } else if (entry.useBar === 'no') {
-          parts.push(`プッシュアップバーを使わなかったのね。手首や肩の角度に無理が出ていないか確認しなさい。`);
+          parts.push(`バーを使わなかったのね。手首や肩の角度に無理が出ていないか確認しなさい。`);
         }
-      } else {
-        parts.push(`下半身は筋量が多い分、呼吸と体幹の固定が命よ。着るおもりで重心がブレないよう丁寧にしゃがみなさい。`);
       }
 
       if (entry.stomach === '不調' || entry.stomach === 'やや疲れ') {
@@ -489,7 +610,11 @@
         parts.push(`体重${entry.bodyWeight}kgで効きが控えめなのはエネルギー不足のサインよ。落とすペースには気をつけなさい。`);
       }
 
-      return { mood, text: parts.join(' ') };
+      return {
+        mood,
+        text: parts.join(' '),
+        hint: buildProgressionHint(entry)
+      };
     }
 
     function refreshCatComment() {
@@ -502,6 +627,81 @@
       const res = generateBlackCatComment(current, prevSame);
       document.getElementById('catMoodTag').textContent = `モード: ${res.mood}`;
       document.getElementById('blackCatComment').textContent = res.text;
+      document.getElementById('progressionHintText').textContent = res.hint;
+    }
+
+    function populateMonthSelect() {
+      const select = document.getElementById('monthSelect');
+      const months = Array.from(new Set(logs.map(l => l.date.slice(0, 7)))).sort().reverse();
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      if (!months.includes(currentMonth)) {
+        months.unshift(currentMonth);
+      }
+
+      const prevSelected = select.value;
+      select.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
+
+      if (prevSelected && months.includes(prevSelected)) {
+        select.value = prevSelected;
+      } else if (logs.length > 0) {
+        select.value = logs[0].date.slice(0, 7);
+      } else {
+        select.value = currentMonth;
+      }
+    }
+
+    function renderMonthlyAndCumulative() {
+      const selectedMonth = document.getElementById('monthSelect').value;
+      const mLogs = logs.filter(l => l.date.startsWith(selectedMonth));
+
+      const mSessions = mLogs.length;
+      const mReps = mLogs.reduce((acc, l) => acc + l.sets.reduce((a, b) => a + b, 0), 0);
+      const mVol = mLogs.reduce((acc, l) => acc + calcEntryVolume(l), 0);
+
+      document.getElementById('monthlySessions').textContent = `${mSessions}回`;
+      document.getElementById('monthlyReps').textContent = `${mReps}回`;
+      document.getElementById('monthlyVolume').textContent = `${mVol.toLocaleString()}kg`;
+
+      const mStomachIssues = mLogs.filter(l => l.stomach !== '良好').length;
+      const mPainIssues = mLogs.filter(l => l.pain !== 'なし').length;
+
+      let mEval = '';
+      if (mSessions === 0) {
+        mEval = `${selectedMonth}の記録はまだないわね。中3日ペースを意識して、まずは1セッション積み上げなさい。`;
+      } else {
+        mEval = `${selectedMonth}は${mSessions}セッション・合計${mReps}レップ・実質総負荷${mVol.toLocaleString()}kgを積み上げたわ。`;
+        if (mPainIssues > 0) {
+          mEval += ` 関節や腰の違和感が${mPainIssues}回出ているから、負荷の上げすぎには要注意よ。`;
+        } else if (mStomachIssues > 0) {
+          mEval += ` 胃腸の疲れが${mStomachIssues}回見られるわね。分食や消化ケアを徹底しながら着実に進めなさい。`;
+        } else {
+          mEval += ` コンディションも安定していて理想的な流れよ。この調子でレップ数かおもり量を段階的に伸ばしていきなさい。`;
+        }
+      }
+      document.getElementById('monthlyCatEval').textContent = mEval;
+
+      // Cumulative evaluation
+      const totalSessions = logs.length;
+      const totalAllReps = logs.reduce((acc, l) => acc + l.sets.reduce((a, b) => a + b, 0), 0);
+      const totalAllVol = logs.reduce((acc, l) => acc + calcEntryVolume(l), 0);
+      const maxAdded = logs.reduce((max, l) => Math.max(max, parseFloat(l.addedWeight) || 0), 0);
+
+      document.getElementById('cumulativeSessionsBadge').textContent = `累計 ${totalSessions}回`;
+      document.getElementById('cumulativeVolume').textContent = `${totalAllVol.toLocaleString()} kg`;
+      document.getElementById('cumulativeStatsSub').textContent = `最大+${maxAdded}kg / ${totalAllReps}回`;
+
+      let cEval = '';
+      if (totalSessions === 0) {
+        cEval = `まだ蓄積データがないわね。最初の記録を残して、ここから伝説のログを刻み始めなさい。`;
+      } else {
+        cEval = `これまでに累計${totalSessions}セッション（総レップ${totalAllReps}回・実質総負荷${totalAllVol.toLocaleString()}kg）を蓄積してきたわ。最大着るおもりは+${maxAdded}kgまで到達しているわね。`;
+        if (totalAllVol >= 10000) {
+          cEval += ` 実質総負荷10,000kg超えの確かな積み上げよ。筋肉も神経系も着実に強くなっているわ、裕貴。`;
+        } else {
+          cEval += ` まずは累計実質負荷10,000kgの大台を目指して、1回1回の可動域と回復サイクルを大切にしなさい。`;
+        }
+      }
+      document.getElementById('cumulativeCatEval').textContent = cEval;
     }
 
     function renderAll() {
@@ -509,6 +709,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
 
       const currentEx = document.getElementById('exerciseType').value;
+      const goalReps = getGoalRepsForExercise(currentEx);
       const exLogs = logs.filter(l => l.exercise === currentEx);
       const latestAny = logs[0] || null;
       const latestEx = exLogs[0] || null;
@@ -535,24 +736,24 @@
         }
       }
 
-      const exTitle = currentEx === 'squat' ? '加重スクワット' : 'デクライン・プッシュアップ';
-      document.getElementById('targetLabel').textContent = `NEXT TARGET (${exTitle})`;
+      const exTitle = currentEx === 'squat' ? '加重スクワット' : 'デクライン腕立て';
+      document.getElementById('targetLabel').textContent = `NEXT TARGET (${exTitle}・基準${goalReps}回)`;
 
       if (latestEx) {
         const nextSets = [...latestEx.sets];
         let nextAdded = latestEx.addedWeight;
         let advice = '';
 
-        if (nextSets[0] >= 10 && nextSets[1] >= 10 && nextSets[2] >= 10) {
+        if (nextSets[0] >= goalReps && nextSets[1] >= goalReps && nextSets[2] >= goalReps) {
           nextAdded += 2.5;
           nextSets[0] = 8; nextSets[1] = 8; nextSets[2] = 8;
-          advice = `${exTitle}3セット10回達成！着るおもりを +${nextAdded}kg にして8回×3セットへ進みましょう。`;
+          advice = `${exTitle}の目標${goalReps}回×3セット達成！着るおもりを +${nextAdded}kg にして8回×3セットへ進みましょう。`;
         } else {
           const minVal = Math.min(...nextSets);
           const idx = nextSets.lastIndexOf(minVal);
-          nextSets[idx] += 1;
+          nextSets[idx] = Math.min(goalReps, nextSets[idx] + 1);
           const totalTarget = nextSets.reduce((a, b) => a + b, 0);
-          advice = `前回「${latestEx.sets.join(', ')}」を完遂。今回は合計${totalTarget}レップ（＋1回更新）がターゲットです。`;
+          advice = `前回「${latestEx.sets.join(', ')}」を完遂。基準${goalReps}回に向け、今回は合計${totalTarget}レップ（＋1回更新）がターゲットです。`;
         }
 
         document.getElementById('nextTargetDisplay').textContent = `目標: ${nextSets.join(', ')} (+${nextAdded}kg)`;
@@ -582,13 +783,19 @@
         const catRes = generateBlackCatComment(latestEx, prevEx);
         document.getElementById('catMoodTag').textContent = `モード: ${catRes.mood}`;
         document.getElementById('blackCatComment').textContent = catRes.text;
+        document.getElementById('progressionHintText').textContent = catRes.hint;
       } else {
-        document.getElementById('nextTargetDisplay').textContent = `目標: 10, 10, 10 (+10kg)`;
-        document.getElementById('targetAdvice').textContent = `${exTitle}の初回記録を入力しましょう。着るおもりの重さとフォームを安定させて3セット完遂を目指します。`;
-        document.getElementById('set1').placeholder = 10;
-        document.getElementById('set2').placeholder = 10;
-        document.getElementById('set3').placeholder = 10;
+        const initReps = currentEx === 'squat' ? 15 : 12;
+        document.getElementById('nextTargetDisplay').textContent = `目標: ${initReps}, ${initReps}, ${initReps} (+10kg)`;
+        document.getElementById('targetAdvice').textContent = `${exTitle}の記録を入力しましょう。目標基準は${initReps}回×3セットです。`;
+        document.getElementById('set1').placeholder = initReps;
+        document.getElementById('set2').placeholder = initReps;
+        document.getElementById('set3').placeholder = initReps;
+        document.getElementById('progressionHintText').textContent = `${exTitle}（目標${initReps}回×3セット）の記録を保存すると、次のレップ更新と増量タイミングの示唆を出すわよ。`;
       }
+
+      populateMonthSelect();
+      renderMonthlyAndCumulative();
 
       const listEl = document.getElementById('historyList');
       listEl.innerHTML = logs.map(item => {
@@ -599,7 +806,7 @@
 
         const factor = getActiveFactor(item);
         const totalReps = item.sets.reduce((a, b) => a + b, 0);
-        const vol = Math.round(calcEffectiveLoad(item) * totalReps);
+        const vol = calcEntryVolume(item);
 
         return `
           <div class="glass-card rounded-xl p-3.5 space-y-2">
