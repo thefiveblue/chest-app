@@ -37,7 +37,7 @@
         <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-rose-400 to-amber-300 bg-clip-text text-transparent">
           CHEST &amp; SQUAT LOG
         </h1>
-        <p class="text-[11px] text-slate-400">過去ログ追加・月間＆蓄積評価・黒猫示唆搭載</p>
+        <p class="text-[11px] text-slate-400">カレンダー履歴・過去ログ編集・黒猫評価搭載</p>
       </div>
       <div id="recoveryBadge" class="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
         判定中...
@@ -66,7 +66,7 @@
 
       <div class="bg-slate-900/75 rounded-xl p-3 border border-slate-800 space-y-2">
         <p id="blackCatComment" class="text-xs text-slate-100 leading-relaxed">
-          ……ふっ、過去ログも月間評価も蓄積査定も全部まとめて抱え込む気ね、裕貴。着るおもりでしっかり追い込んで、この私を唸らせてみなさいよ。
+          ……ふっ、カレンダーでトレ日を管理して、過去の記録も自由に直せるようにしたわ。さあ、積み上げの質をさらに高めていきなさいよ、裕貴。
         </p>
         <div id="progressionHintBox" class="pt-2 border-t border-slate-800/90 text-[11px] text-amber-300 leading-relaxed">
           <span class="font-extrabold text-amber-400">【負荷増量の示唆】</span>
@@ -104,11 +104,16 @@
       </div>
     </section>
 
-    <!-- Input Form (Supports Past Dates) -->
-    <section class="glass-card rounded-2xl p-4 space-y-4">
+    <!-- Input / Edit Form -->
+    <section id="formSection" class="glass-card rounded-2xl p-4 space-y-4 border border-slate-700/80">
       <div class="flex items-center justify-between border-b border-slate-700/70 pb-2 gap-2">
         <div>
-          <h2 class="text-sm font-bold text-slate-200">セッション記録・過去ログ追加</h2>
+          <div class="flex items-center gap-2">
+            <h2 id="formTitle" class="text-sm font-bold text-slate-200">セッション記録・過去ログ追加</h2>
+            <span id="editingBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-400/40">
+              編集中
+            </span>
+          </div>
           <p class="text-[10px] text-slate-400">日付を変更すれば過去の記録もそのまま追加できます</p>
         </div>
         <input type="date" id="workoutDate" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-rose-500" />
@@ -275,21 +280,67 @@
           class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500" />
       </div>
 
-      <button onclick="saveWorkout()" class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-sm font-extrabold text-white shadow-lg shadow-rose-950/50 active:scale-[0.98] transition">
-        記録を保存 ＆ 黒猫が評価する
-      </button>
+      <div class="flex gap-2">
+        <button id="submitBtn" onclick="saveWorkout()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-sm font-extrabold text-white shadow-lg shadow-rose-950/50 active:scale-[0.98] transition">
+          記録を保存 ＆ 黒猫が評価する
+        </button>
+        <button id="cancelEditBtn" type="button" onclick="cancelEdit()" class="hidden px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-slate-700 active:scale-95">
+          取消
+        </button>
+      </div>
+    </section>
+
+    <!-- Monthly Calendar & Selected Day Logs -->
+    <section class="glass-card rounded-2xl p-4 border border-sky-500/25 space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-bold text-sky-300">月間トレーニングカレンダー</h2>
+          <p class="text-[10px] text-slate-400">色マークの日をタップするとその日の履歴を表示します</p>
+        </div>
+        <select id="monthSelect" onchange="handleMonthChange()"
+          class="bg-slate-800 text-slate-200 text-xs font-bold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+
+      <div class="flex items-center gap-3 text-[10px] text-slate-400">
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-400 inline-block"></span>デクライン胸</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>スクワット</span>
+      </div>
+
+      <!-- Day of Week Headers -->
+      <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 pt-1">
+        <div class="text-rose-400">日</div>
+        <div>月</div>
+        <div>火</div>
+        <div>水</div>
+        <div>木</div>
+        <div>金</div>
+        <div class="text-sky-400">土</div>
+      </div>
+
+      <!-- Calendar Cells -->
+      <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 text-center"></div>
+
+      <!-- Selected Date Logs -->
+      <div id="selectedDatePanel" class="pt-2 border-t border-slate-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <span id="selectedDateLabel" class="text-xs font-extrabold text-slate-200">選択日: -</span>
+          <span id="selectedDateCount" class="text-[10px] text-slate-400">0件</span>
+        </div>
+        <div id="selectedDateLogs" class="space-y-2"></div>
+      </div>
     </section>
 
     <!-- Monthly Summary & Evaluation Card -->
     <section class="glass-card rounded-2xl p-4 border border-amber-500/25 space-y-3">
       <div class="flex items-center justify-between gap-2">
         <div>
-          <h2 class="text-sm font-bold text-amber-300">月間トレーニング履歴 ＆ 評価</h2>
-          <p class="text-[10px] text-slate-400">月別の負荷量・頻度・コンディションを黒猫が査定</p>
+          <h2 class="text-sm font-bold text-amber-300">月間トレーニング集計 ＆ 評価</h2>
+          <p class="text-[10px] text-slate-400">選択中の月の負荷量・頻度・コンディションを黒猫が査定</p>
         </div>
-        <select id="monthSelect" onchange="renderMonthlyAndCumulative()"
-          class="bg-slate-800 text-slate-200 text-xs font-bold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-amber-400">
-        </select>
+        <span id="monthlyMonthBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          -
+        </span>
       </div>
 
       <div class="grid grid-cols-3 gap-2 text-center">
@@ -340,10 +391,10 @@
       </p>
     </section>
 
-    <!-- History List -->
+    <!-- All History List -->
     <section class="space-y-2.5">
       <div class="flex items-center justify-between px-1">
-        <h2 class="text-sm font-bold text-slate-200">トレーニング履歴一覧</h2>
+        <h2 class="text-sm font-bold text-slate-200">全トレーニング履歴（編集・削除可）</h2>
         <button onclick="exportData()" class="text-[11px] text-slate-400 underline hover:text-slate-200">バックアップコピー</button>
       </div>
       <div id="historyList" class="space-y-2.5"></div>
@@ -352,7 +403,7 @@
   </main>
 
   <script>
-    const STORAGE_KEY = 'yuki_chest_squat_protocol_v3';
+    const STORAGE_KEY = 'yuki_chest_squat_protocol_v4';
 
     const defaultLogs = [
       {
@@ -409,6 +460,8 @@
     ];
 
     let logs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultLogs;
+    let editingId = null;
+    let selectedCalendarDate = null;
 
     let timerSeconds = 180;
     let timerInterval = null;
@@ -421,6 +474,7 @@
     function init() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('workoutDate').value = today;
+      selectedCalendarDate = logs[0]?.date || today;
       selectExercise('chest', false);
       renderAll();
       updateLiveVolume();
@@ -452,8 +506,10 @@
         handleSetupChange();
       }
 
-      if (shouldRender) {
+      if (shouldRender && editingId === null) {
         renderAll();
+        updateLiveVolume();
+      } else if (shouldRender) {
         updateLiveVolume();
       }
     }
@@ -463,10 +519,10 @@
         return parseFloat(entry.squatFactor || 0.88);
       }
       if (entry.useDecline === 'knee') {
-        return 0.55; // 膝つき（ニー・デクライン）目安係数
+        return 0.55;
       }
       if (entry.useDecline === 'no') {
-        return 0.65; // フラット（足床）
+        return 0.65;
       }
       return parseFloat(entry.declineFactor || 0.75);
     }
@@ -643,6 +699,9 @@
 
       if (prevSelected && months.includes(prevSelected)) {
         select.value = prevSelected;
+      } else if (selectedCalendarDate) {
+        const calMonth = selectedCalendarDate.slice(0, 7);
+        select.value = months.includes(calMonth) ? calMonth : months[0];
       } else if (logs.length > 0) {
         select.value = logs[0].date.slice(0, 7);
       } else {
@@ -650,10 +709,137 @@
       }
     }
 
+    function handleMonthChange() {
+      const monthStr = document.getElementById('monthSelect').value;
+      if (!selectedCalendarDate || !selectedCalendarDate.startsWith(monthStr)) {
+        const firstInMonth = logs.find(l => l.date.startsWith(monthStr));
+        selectedCalendarDate = firstInMonth ? firstInMonth.date : `${monthStr}-01`;
+      }
+      renderCalendarAndSelectedDay();
+      renderMonthlyAndCumulative();
+    }
+
+    function selectCalendarDate(dateStr) {
+      selectedCalendarDate = dateStr;
+      renderCalendarAndSelectedDay();
+    }
+
+    function renderLogCardHtml(item, showEdit = true) {
+      const ex = item.exercise || 'chest';
+      const exBadge = ex === 'squat'
+        ? '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">スクワット</span>'
+        : '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/30">デクライン胸</span>';
+
+      const factor = getActiveFactor(item);
+      const totalReps = item.sets.reduce((a, b) => a + b, 0);
+      const vol = calcEntryVolume(item);
+
+      return `
+        <div class="glass-card rounded-xl p-3.5 space-y-2 border border-slate-700/80">
+          <div class="flex justify-between items-center gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-xs font-bold text-slate-300">${item.date}</span>
+              ${exBadge}
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-amber-300">
+                おもり +${item.addedWeight}kg
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">
+                係数 ${factor.toFixed(2)}
+              </span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${showEdit ? `<button onclick="startEditLog(${item.id})" class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30 text-[11px] font-bold active:scale-95">編集</button>` : ''}
+              <button onclick="deleteLog(${item.id})" class="text-[11px] text-slate-500 hover:text-rose-400">削除</button>
+            </div>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <div class="text-lg font-black text-white tracking-wide">
+              ${item.sets.join(' - ')} <span class="text-xs font-normal text-slate-400">回 (計${totalReps}回)</span>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-slate-400">実質負荷: </span>
+              <span class="text-sm font-extrabold text-emerald-400">${vol.toLocaleString()} kg</span>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-[10px]">
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">体重 ${item.bodyWeight}kg</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-rose-300">${getSetupLabel(item)}</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">効き: ${item.pump}</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">胃腸: ${item.stomach}</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 ${item.pain === 'なし' ? 'text-emerald-300' : 'text-amber-300'}">痛み: ${item.pain}</span>
+          </div>
+          ${item.memo ? `<p class="text-[11px] text-slate-400 bg-slate-900/60 rounded-lg px-2.5 py-1.5">${item.memo}</p>` : ''}
+        </div>
+      `;
+    }
+
+    function renderCalendarAndSelectedDay() {
+      const monthStr = document.getElementById('monthSelect').value;
+      const [yearStr, monStr] = monthStr.split('-');
+      const year = parseInt(yearStr, 10);
+      const monthIndex = parseInt(monStr, 10) - 1;
+
+      const firstDayOfWeek = new Date(year, monthIndex, 1).getDay();
+      const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+      const grid = document.getElementById('calendarGrid');
+      const cells = [];
+
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        cells.push(`<div class="h-11 rounded-lg bg-slate-900/30"></div>`);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dd = String(day).padStart(2, '0');
+        const dateStr = `${monthStr}-${dd}`;
+        const dayLogs = logs.filter(l => l.date === dateStr);
+        const hasChest = dayLogs.some(l => (l.exercise || 'chest') === 'chest');
+        const hasSquat = dayLogs.some(l => l.exercise === 'squat');
+        const isSelected = selectedCalendarDate === dateStr;
+
+        let borderClass = 'border-slate-800 bg-slate-900/70 text-slate-300';
+        if (isSelected) {
+          borderClass = 'border-sky-400 bg-sky-500/20 text-white font-extrabold ring-1 ring-sky-400/60';
+        } else if (dayLogs.length > 0) {
+          borderClass = 'border-emerald-500/40 bg-slate-800/90 text-white font-bold';
+        }
+
+        const dots = `
+          <div class="flex items-center justify-center gap-1 mt-0.5 h-2">
+            ${hasChest ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>' : ''}
+            ${hasSquat ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ''}
+          </div>
+        `;
+
+        cells.push(`
+          <button type="button" onclick="selectCalendarDate('${dateStr}')"
+            class="h-11 rounded-lg border flex flex-col items-center justify-center transition active:scale-95 ${borderClass}">
+            <span class="text-xs leading-none">${day}</span>
+            ${dots}
+          </button>
+        `);
+      }
+
+      grid.innerHTML = cells.join('');
+
+      const targetDate = selectedCalendarDate || `${monthStr}-01`;
+      const dayLogs = logs.filter(l => l.date === targetDate);
+      document.getElementById('selectedDateLabel').textContent = `選択日: ${targetDate}`;
+      document.getElementById('selectedDateCount').textContent = `${dayLogs.length}件`;
+
+      const panelLogsEl = document.getElementById('selectedDateLogs');
+      if (dayLogs.length === 0) {
+        panelLogsEl.innerHTML = `<p class="text-xs text-slate-400 bg-slate-900/60 rounded-xl p-3">この日のトレーニング記録はありません。</p>`;
+      } else {
+        panelLogsEl.innerHTML = dayLogs.map(item => renderLogCardHtml(item, true)).join('');
+      }
+    }
+
     function renderMonthlyAndCumulative() {
       const selectedMonth = document.getElementById('monthSelect').value;
-      const mLogs = logs.filter(l => l.date.startsWith(selectedMonth));
+      document.getElementById('monthlyMonthBadge').textContent = selectedMonth;
 
+      const mLogs = logs.filter(l => l.date.startsWith(selectedMonth));
       const mSessions = mLogs.length;
       const mReps = mLogs.reduce((acc, l) => acc + l.sets.reduce((a, b) => a + b, 0), 0);
       const mVol = mLogs.reduce((acc, l) => acc + calcEntryVolume(l), 0);
@@ -680,7 +866,6 @@
       }
       document.getElementById('monthlyCatEval').textContent = mEval;
 
-      // Cumulative evaluation
       const totalSessions = logs.length;
       const totalAllReps = logs.reduce((acc, l) => acc + l.sets.reduce((a, b) => a + b, 0), 0);
       const totalAllVol = logs.reduce((acc, l) => acc + calcEntryVolume(l), 0);
@@ -702,6 +887,56 @@
         }
       }
       document.getElementById('cumulativeCatEval').textContent = cEval;
+    }
+
+    function startEditLog(id) {
+      const target = logs.find(l => l.id === id);
+      if (!target) return;
+
+      editingId = id;
+      document.getElementById('formTitle').textContent = '過去の記録を編集中';
+      document.getElementById('editingBadge').classList.remove('hidden');
+      document.getElementById('submitBtn').textContent = '変更内容を保存する';
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      document.getElementById('workoutDate').value = target.date;
+      selectExercise(target.exercise || 'chest', false);
+
+      document.getElementById('bodyWeight').value = target.bodyWeight;
+      document.getElementById('addedWeight').value = target.addedWeight;
+      document.getElementById('useDecline').value = target.useDecline || 'yes';
+      document.getElementById('useBar').value = target.useBar || 'yes';
+      document.getElementById('declineFactor').value = String(target.declineFactor || 0.75);
+      document.getElementById('squatFactor').value = String(target.squatFactor || 0.88);
+      document.getElementById('squatDepth').value = target.squatDepth || 'パラレル以上（深め）';
+
+      document.getElementById('set1').value = target.sets[0] ?? '';
+      document.getElementById('set2').value = target.sets[1] ?? '';
+      document.getElementById('set3').value = target.sets[2] ?? '';
+
+      document.getElementById('pumpCondition').value = target.pump || '普通';
+      document.getElementById('stomachCondition').value = target.stomach || '良好';
+      document.getElementById('painCondition').value = target.pain || 'なし';
+      document.getElementById('memoInput').value = target.memo || '';
+
+      handleSetupChange();
+      updateLiveVolume();
+      document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      document.getElementById('formTitle').textContent = 'セッション記録・過去ログ追加';
+      document.getElementById('editingBadge').classList.add('hidden');
+      document.getElementById('submitBtn').textContent = '記録を保存 ＆ 黒猫が評価する';
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+
+      document.getElementById('set1').value = '';
+      document.getElementById('set2').value = '';
+      document.getElementById('set3').value = '';
+      document.getElementById('memoInput').value = '';
+      renderAll();
+      updateLiveVolume();
     }
 
     function renderAll() {
@@ -739,129 +974,115 @@
       const exTitle = currentEx === 'squat' ? '加重スクワット' : 'デクライン腕立て';
       document.getElementById('targetLabel').textContent = `NEXT TARGET (${exTitle}・基準${goalReps}回)`;
 
-      if (latestEx) {
-        const nextSets = [...latestEx.sets];
-        let nextAdded = latestEx.addedWeight;
-        let advice = '';
+      if (editingId === null) {
+        if (latestEx) {
+          const nextSets = [...latestEx.sets];
+          let nextAdded = latestEx.addedWeight;
+          let advice = '';
 
-        if (nextSets[0] >= goalReps && nextSets[1] >= goalReps && nextSets[2] >= goalReps) {
-          nextAdded += 2.5;
-          nextSets[0] = 8; nextSets[1] = 8; nextSets[2] = 8;
-          advice = `${exTitle}の目標${goalReps}回×3セット達成！着るおもりを +${nextAdded}kg にして8回×3セットへ進みましょう。`;
+          if (nextSets[0] >= goalReps && nextSets[1] >= goalReps && nextSets[2] >= goalReps) {
+            nextAdded += 2.5;
+            nextSets[0] = 8; nextSets[1] = 8; nextSets[2] = 8;
+            advice = `${exTitle}の目標${goalReps}回×3セット達成！着るおもりを +${nextAdded}kg にして8回×3セットへ進みましょう。`;
+          } else {
+            const minVal = Math.min(...nextSets);
+            const idx = nextSets.lastIndexOf(minVal);
+            nextSets[idx] = Math.min(goalReps, nextSets[idx] + 1);
+            const totalTarget = nextSets.reduce((a, b) => a + b, 0);
+            advice = `前回「${latestEx.sets.join(', ')}」を完遂。基準${goalReps}回に向け、今回は合計${totalTarget}レップ（＋1回更新）がターゲットです。`;
+          }
+
+          document.getElementById('nextTargetDisplay').textContent = `目標: ${nextSets.join(', ')} (+${nextAdded}kg)`;
+          document.getElementById('targetAdvice').textContent = advice;
+          document.getElementById('set1').placeholder = nextSets[0];
+          document.getElementById('set2').placeholder = nextSets[1];
+          document.getElementById('set3').placeholder = nextSets[2];
+          document.getElementById('addedWeight').value = nextAdded;
+          document.getElementById('bodyWeight').value = latestEx.bodyWeight;
+
+          if (currentEx === 'chest') {
+            document.getElementById('useDecline').value = latestEx.useDecline || 'yes';
+            document.getElementById('useBar').value = latestEx.useBar || 'yes';
+            if (latestEx.declineFactor) {
+              document.getElementById('declineFactor').value = String(latestEx.declineFactor);
+            }
+            handleSetupChange();
+          } else {
+            if (latestEx.squatFactor) {
+              document.getElementById('squatFactor').value = String(latestEx.squatFactor);
+            }
+            if (latestEx.squatDepth) {
+              document.getElementById('squatDepth').value = latestEx.squatDepth;
+            }
+          }
+
+          const catRes = generateBlackCatComment(latestEx, prevEx);
+          document.getElementById('catMoodTag').textContent = `モード: ${catRes.mood}`;
+          document.getElementById('blackCatComment').textContent = catRes.text;
+          document.getElementById('progressionHintText').textContent = catRes.hint;
         } else {
-          const minVal = Math.min(...nextSets);
-          const idx = nextSets.lastIndexOf(minVal);
-          nextSets[idx] = Math.min(goalReps, nextSets[idx] + 1);
-          const totalTarget = nextSets.reduce((a, b) => a + b, 0);
-          advice = `前回「${latestEx.sets.join(', ')}」を完遂。基準${goalReps}回に向け、今回は合計${totalTarget}レップ（＋1回更新）がターゲットです。`;
+          const initReps = currentEx === 'squat' ? 15 : 12;
+          document.getElementById('nextTargetDisplay').textContent = `目標: ${initReps}, ${initReps}, ${initReps} (+10kg)`;
+          document.getElementById('targetAdvice').textContent = `${exTitle}の記録を入力しましょう。目標基準は${initReps}回×3セットです。`;
+          document.getElementById('set1').placeholder = initReps;
+          document.getElementById('set2').placeholder = initReps;
+          document.getElementById('set3').placeholder = initReps;
+          document.getElementById('progressionHintText').textContent = `${exTitle}（目標${initReps}回×3セット）の記録を保存すると、次のレップ更新と増量タイミングの示唆を出すわよ。`;
         }
+      }
 
-        document.getElementById('nextTargetDisplay').textContent = `目標: ${nextSets.join(', ')} (+${nextAdded}kg)`;
-        document.getElementById('targetAdvice').textContent = advice;
-        document.getElementById('set1').placeholder = nextSets[0];
-        document.getElementById('set2').placeholder = nextSets[1];
-        document.getElementById('set3').placeholder = nextSets[2];
-        document.getElementById('addedWeight').value = nextAdded;
-        document.getElementById('bodyWeight').value = latestEx.bodyWeight;
-
-        if (currentEx === 'chest') {
-          document.getElementById('useDecline').value = latestEx.useDecline || 'yes';
-          document.getElementById('useBar').value = latestEx.useBar || 'yes';
-          if (latestEx.declineFactor) {
-            document.getElementById('declineFactor').value = String(latestEx.declineFactor);
-          }
-          handleSetupChange();
-        } else {
-          if (latestEx.squatFactor) {
-            document.getElementById('squatFactor').value = String(latestEx.squatFactor);
-          }
-          if (latestEx.squatDepth) {
-            document.getElementById('squatDepth').value = latestEx.squatDepth;
-          }
-        }
-
-        const catRes = generateBlackCatComment(latestEx, prevEx);
-        document.getElementById('catMoodTag').textContent = `モード: ${catRes.mood}`;
-        document.getElementById('blackCatComment').textContent = catRes.text;
-        document.getElementById('progressionHintText').textContent = catRes.hint;
-      } else {
-        const initReps = currentEx === 'squat' ? 15 : 12;
-        document.getElementById('nextTargetDisplay').textContent = `目標: ${initReps}, ${initReps}, ${initReps} (+10kg)`;
-        document.getElementById('targetAdvice').textContent = `${exTitle}の記録を入力しましょう。目標基準は${initReps}回×3セットです。`;
-        document.getElementById('set1').placeholder = initReps;
-        document.getElementById('set2').placeholder = initReps;
-        document.getElementById('set3').placeholder = initReps;
-        document.getElementById('progressionHintText').textContent = `${exTitle}（目標${initReps}回×3セット）の記録を保存すると、次のレップ更新と増量タイミングの示唆を出すわよ。`;
+      if (!selectedCalendarDate && logs.length > 0) {
+        selectedCalendarDate = logs[0].date;
       }
 
       populateMonthSelect();
+      renderCalendarAndSelectedDay();
       renderMonthlyAndCumulative();
 
       const listEl = document.getElementById('historyList');
-      listEl.innerHTML = logs.map(item => {
-        const ex = item.exercise || 'chest';
-        const exBadge = ex === 'squat'
-          ? '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">スクワット</span>'
-          : '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/30">デクライン胸</span>';
-
-        const factor = getActiveFactor(item);
-        const totalReps = item.sets.reduce((a, b) => a + b, 0);
-        const vol = calcEntryVolume(item);
-
-        return `
-          <div class="glass-card rounded-xl p-3.5 space-y-2">
-            <div class="flex justify-between items-center">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-xs font-bold text-slate-300">${item.date}</span>
-                ${exBadge}
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-amber-300">
-                  おもり +${item.addedWeight}kg
-                </span>
-                <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">
-                  係数 ${factor.toFixed(2)}
-                </span>
-              </div>
-              <button onclick="deleteLog(${item.id})" class="text-[11px] text-slate-500 hover:text-rose-400">削除</button>
-            </div>
-            <div class="flex items-baseline justify-between">
-              <div class="text-lg font-black text-white tracking-wide">
-                ${item.sets.join(' - ')} <span class="text-xs font-normal text-slate-400">回 (計${totalReps}回)</span>
-              </div>
-              <div class="text-right">
-                <span class="text-xs text-slate-400">実質負荷: </span>
-                <span class="text-sm font-extrabold text-emerald-400">${vol.toLocaleString()} kg</span>
-              </div>
-            </div>
-            <div class="flex flex-wrap gap-1.5 text-[10px]">
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">体重 ${item.bodyWeight}kg</span>
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-rose-300">${getSetupLabel(item)}</span>
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">効き: ${item.pump}</span>
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">胃腸: ${item.stomach}</span>
-              <span class="px-2 py-0.5 rounded bg-slate-800 ${item.pain === 'なし' ? 'text-emerald-300' : 'text-amber-300'}">痛み: ${item.pain}</span>
-            </div>
-            ${item.memo ? `<p class="text-[11px] text-slate-400 bg-slate-900/60 rounded-lg px-2.5 py-1.5">${item.memo}</p>` : ''}
-          </div>
-        `;
-      }).join('');
+      listEl.innerHTML = logs.map(item => renderLogCardHtml(item, true)).join('');
     }
 
     function saveWorkout() {
       const date = document.getElementById('workoutDate').value;
       const state = getCurrentFormState();
 
+      if (!date) {
+        alert('日付を選択してください！');
+        return;
+      }
+
       if (!state.sets[0] && !state.sets[1] && !state.sets[2]) {
         alert('少なくとも1セットの回数を入力してください！');
         return;
       }
 
-      const newLog = {
-        id: Date.now(),
-        date,
-        ...state,
-        memo: document.getElementById('memoInput').value.trim()
-      };
+      const memoText = document.getElementById('memoInput').value.trim();
 
-      logs.unshift(newLog);
+      if (editingId !== null) {
+        logs = logs.map(item => item.id === editingId ? {
+          ...item,
+          date,
+          ...state,
+          memo: memoText
+        } : item);
+        selectedCalendarDate = date;
+        editingId = null;
+        document.getElementById('formTitle').textContent = 'セッション記録・過去ログ追加';
+        document.getElementById('editingBadge').classList.add('hidden');
+        document.getElementById('submitBtn').textContent = '記録を保存 ＆ 黒猫が評価する';
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+      } else {
+        const newLog = {
+          id: Date.now(),
+          date,
+          ...state,
+          memo: memoText
+        };
+        logs.unshift(newLog);
+        selectedCalendarDate = date;
+      }
+
       document.getElementById('set1').value = '';
       document.getElementById('set2').value = '';
       document.getElementById('set3').value = '';
@@ -872,6 +1093,9 @@
 
     function deleteLog(id) {
       if (!confirm('この記録を削除しますか？')) return;
+      if (editingId === id) {
+        cancelEdit();
+      }
       logs = logs.filter(l => l.id !== id);
       renderAll();
     }
