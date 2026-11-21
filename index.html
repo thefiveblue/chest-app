@@ -37,7 +37,7 @@
         <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-rose-400 to-amber-300 bg-clip-text text-transparent">
           CHEST PROTOCOL
         </h1>
-        <p class="text-[11px] text-slate-400">加重デクライン・ハの字バー・黒猫評価搭載</p>
+        <p class="text-[11px] text-slate-400">デクライン＆バー選択・黒猫評価搭載</p>
       </div>
       <div id="recoveryBadge" class="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
         判定中...
@@ -118,23 +118,34 @@
         </div>
       </div>
 
-      <!-- Decline Factor & Push-up Bar -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-[11px] font-medium text-slate-400 mb-1">デクライン負荷係数</label>
-          <select id="declineFactor" onchange="updateLiveVolume()"
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-rose-500">
-            <option value="0.70">軽度デクライン (0.70)</option>
-            <option value="0.75" selected>標準デクライン (0.75)</option>
-            <option value="0.80">高角度デクライン (0.80)</option>
-          </select>
+      <!-- Decline & Push-up Bar Selection -->
+      <div class="bg-slate-900/60 border border-slate-700/80 rounded-xl p-3 space-y-3">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-1">デクライン（足上げ）</label>
+            <select id="useDecline" onchange="handleSetupChange()"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-bold text-white focus:outline-none focus:border-rose-500">
+              <option value="yes" selected>する（足上げ）</option>
+              <option value="no">しない（フラット）</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-1">プッシュアップバー</label>
+            <select id="useBar" onchange="handleSetupChange()"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-bold text-white focus:outline-none focus:border-rose-500">
+              <option value="yes" selected>使う（ハの字・深可動）</option>
+              <option value="no">使わない（床・直）</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-[11px] font-medium text-slate-400 mb-1">プッシュアップバー</label>
-          <select id="barMode" onchange="updateLiveVolume()"
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-rose-500">
-            <option value="ハの字・深ストレッチ" selected>ハの字・深ストレッチ</option>
-            <option value="平行・標準可動域">平行・標準可動域</option>
+
+        <div id="declineFactorRow">
+          <label class="block text-[10px] font-medium text-slate-400 mb-1">デクラインの角度・負荷係数</label>
+          <select id="declineFactor" onchange="updateLiveVolume()"
+            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-300 focus:outline-none focus:border-rose-500">
+            <option value="0.70">軽度デクライン (係数 0.70)</option>
+            <option value="0.75" selected>標準デクライン (係数 0.75)</option>
+            <option value="0.80">高角度デクライン (係数 0.80)</option>
           </select>
         </div>
       </div>
@@ -142,7 +153,7 @@
       <!-- 3 Sets Reps -->
       <div>
         <div class="flex justify-between items-center mb-1.5">
-          <label class="text-[11px] font-medium text-slate-400">デクライン・プッシュアップ（回数）</label>
+          <label class="text-[11px] font-medium text-slate-400">プッシュアップ回数（3セット）</label>
           <span class="text-[11px] text-rose-400 font-semibold">目標: 8〜10回</span>
         </div>
         <div class="grid grid-cols-3 gap-2.5">
@@ -171,7 +182,7 @@
           <div class="text-[10px] text-slate-400 mt-0.5">
             1回実効負荷: <span id="singleRepLoad" class="text-amber-300 font-bold">64.0</span> kg
             <span class="text-slate-500">／</span>
-            <span id="barBadgeText" class="text-rose-300">ハの字・深ストレッチ</span>
+            <span id="setupSummaryText" class="text-rose-300">デクラインあり・バーあり</span>
           </div>
         </div>
         <div class="text-right shrink-0">
@@ -231,7 +242,7 @@
   </main>
 
   <script>
-    const STORAGE_KEY = 'yuki_chest_protocol_v2';
+    const STORAGE_KEY = 'yuki_chest_protocol_v3';
 
     const defaultLogs = [
       {
@@ -239,8 +250,9 @@
         date: '2026-11-19',
         bodyWeight: 72.0,
         addedWeight: 10,
+        useDecline: 'yes',
+        useBar: 'yes',
         declineFactor: 0.75,
-        barMode: 'ハの字・深ストレッチ',
         sets: [10, 10, 8],
         pump: '控えめ',
         stomach: 'やや疲れ',
@@ -252,8 +264,9 @@
         date: '2026-11-15',
         bodyWeight: 74.0,
         addedWeight: 0,
+        useDecline: 'yes',
+        useBar: 'yes',
         declineFactor: 0.75,
-        barMode: 'ハの字・深ストレッチ',
         sets: [16, 15, 15],
         pump: '強い',
         stomach: '良好',
@@ -265,8 +278,9 @@
         date: '2026-11-05',
         bodyWeight: 73.8,
         addedWeight: 0,
+        useDecline: 'yes',
+        useBar: 'yes',
         declineFactor: 0.75,
-        barMode: 'ハの字・深ストレッチ',
         sets: [15, 15, 13],
         pump: '強い',
         stomach: '良好',
@@ -284,36 +298,61 @@
     function init() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('workoutDate').value = today;
+      handleSetupChange();
       renderAll();
       updateLiveVolume();
     }
 
-    function calcEffectiveLoad(bw, added, factor = 0.75) {
-      return (parseFloat(bw || 72) * parseFloat(factor || 0.75)) + parseFloat(added || 0);
+    function getActiveFactor(useDecline, declineFactor) {
+      if (useDecline === 'no') {
+        return 0.65; // フラット（足が床）の標準比率
+      }
+      return parseFloat(declineFactor || 0.75);
+    }
+
+    function getSetupLabel(useDecline, useBar) {
+      const dText = useDecline === 'no' ? 'フラット(足床)' : 'デクライン(足上げ)';
+      const bText = useBar === 'no' ? 'バーなし' : 'バーあり(ハの字)';
+      return `${dText}・${bText}`;
+    }
+
+    function handleSetupChange() {
+      const useDecline = document.getElementById('useDecline').value;
+      const factorRow = document.getElementById('declineFactorRow');
+      factorRow.style.display = useDecline === 'yes' ? 'block' : 'none';
+      updateLiveVolume();
+    }
+
+    function calcEffectiveLoad(bw, added, useDecline, declineFactor) {
+      const factor = getActiveFactor(useDecline, declineFactor);
+      return (parseFloat(bw || 72) * factor) + parseFloat(added || 0);
     }
 
     function updateLiveVolume() {
       const bw = parseFloat(document.getElementById('bodyWeight').value) || 72;
       const added = parseFloat(document.getElementById('addedWeight').value) || 0;
-      const factor = parseFloat(document.getElementById('declineFactor').value) || 0.75;
-      const barMode = document.getElementById('barMode').value;
+      const useDecline = document.getElementById('useDecline').value;
+      const useBar = document.getElementById('useBar').value;
+      const declineFactor = parseFloat(document.getElementById('declineFactor').value) || 0.75;
+
       const s1 = parseInt(document.getElementById('set1').value) || 0;
       const s2 = parseInt(document.getElementById('set2').value) || 0;
       const s3 = parseInt(document.getElementById('set3').value) || 0;
       const totalReps = s1 + s2 + s3;
 
-      const singleLoad = calcEffectiveLoad(bw, added, factor);
+      const singleLoad = calcEffectiveLoad(bw, added, useDecline, declineFactor);
       const totalVol = Math.round(singleLoad * totalReps);
 
       document.getElementById('singleRepLoad').textContent = singleLoad.toFixed(1);
-      document.getElementById('barBadgeText').textContent = barMode;
+      document.getElementById('setupSummaryText').textContent = getSetupLabel(useDecline, useBar);
       document.getElementById('liveTotalVolume').textContent = totalVol.toLocaleString();
     }
 
     function generateBlackCatComment(entry, prevEntry) {
       const totalReps = entry.sets.reduce((a, b) => a + b, 0);
       const prevReps = prevEntry ? prevEntry.sets.reduce((a, b) => a + b, 0) : totalReps;
-      const singleLoad = calcEffectiveLoad(entry.bodyWeight, entry.addedWeight, entry.declineFactor).toFixed(1);
+      const singleLoad = calcEffectiveLoad(entry.bodyWeight, entry.addedWeight, entry.useDecline, entry.declineFactor).toFixed(1);
+      const setupLabel = getSetupLabel(entry.useDecline, entry.useBar);
 
       let mood = '冷静・鋭い査定';
       let parts = [];
@@ -323,18 +362,24 @@
         parts.push(`肩や手首に「痛みあり」ですって？ 痛みを押し切って潰れたら本末転倒よ、裕貴。無理せず休養とフォーム見直しを優先しなさい。`);
       } else if (entry.pain === '違和感') {
         mood = '慎重モード';
-        parts.push(`わずかに違和感があるようね。ハの字の角度と肘の軌道を確認して、無理な踏ん張りは控えなさい。`);
+        parts.push(`わずかに違和感があるようね。${setupLabel}の角度と肘の軌道を確認して、無理な踏ん張りは控えなさい。`);
       } else {
         if (prevEntry && entry.addedWeight >= prevEntry.addedWeight && totalReps > prevReps) {
           mood = '上機嫌（成長認定）';
-          parts.push(`……ふっ、やったじゃない。1回実効${singleLoad}kgで合計${totalReps}レップ（前回比＋${totalReps - prevReps}回）とは見事な伸びよ。大胸筋にしっかり効いているわ。`);
+          parts.push(`……ふっ、やったじゃない。${setupLabel}・1回実効${singleLoad}kgで合計${totalReps}レップ（前回比＋${totalReps - prevReps}回）とは見事な伸びよ。`);
         } else if (prevEntry && totalReps === prevReps) {
           mood = '手厳しい激励';
-          parts.push(`合計${totalReps}レップで前回と並びね。悪くはないけれど、もう1レップ搾り出す余地があったんじゃないかしら？ 次は超えて見せなさい。`);
+          parts.push(`${setupLabel}で合計${totalReps}レップ、前回と並びね。悪くはないけれど、もう1レップ搾り出す余地があったんじゃないかしら？`);
         } else {
           mood = '冷静な分析';
-          parts.push(`1回実効${singleLoad}kg・合計${totalReps}レップでの記録ね。張りがない日でも機械的張力は入っているわ。焦らず次のセッションで立て直しなさい。`);
+          parts.push(`${setupLabel}・1回実効${singleLoad}kg・合計${totalReps}レップでの記録ね。張りがない日でも機械的張力は入っているわ。`);
         }
+      }
+
+      if (entry.useDecline === 'no') {
+        parts.push(`今日はデクラインなしのフラット選択ね。負荷を逃がしたい日や調整日なら理にかなっているわ。`);
+      } else if (entry.useBar === 'no') {
+        parts.push(`プッシュアップバーを使わなかったのね。手首や肩の角度に無理が出ていないかだけはしっかり確認しなさい。`);
       }
 
       if (entry.stomach === '不調' || entry.stomach === 'やや疲れ') {
@@ -350,8 +395,9 @@
       const currentEntry = {
         bodyWeight: parseFloat(document.getElementById('bodyWeight').value) || 72.0,
         addedWeight: parseFloat(document.getElementById('addedWeight').value) || 0,
+        useDecline: document.getElementById('useDecline').value,
+        useBar: document.getElementById('useBar').value,
         declineFactor: parseFloat(document.getElementById('declineFactor').value) || 0.75,
-        barMode: document.getElementById('barMode').value,
         sets: [
           parseInt(document.getElementById('set1').value) || (logs[0]?.sets[0] || 10),
           parseInt(document.getElementById('set2').value) || (logs[0]?.sets[1] || 10),
@@ -415,12 +461,13 @@
         document.getElementById('set3').placeholder = nextSets[2];
         document.getElementById('addedWeight').value = nextAdded;
         document.getElementById('bodyWeight').value = latest.bodyWeight;
+
+        document.getElementById('useDecline').value = latest.useDecline || 'yes';
+        document.getElementById('useBar').value = latest.useBar || 'yes';
         if (latest.declineFactor) {
           document.getElementById('declineFactor').value = String(latest.declineFactor);
         }
-        if (latest.barMode) {
-          document.getElementById('barMode').value = latest.barMode;
-        }
+        handleSetupChange();
 
         const initialCat = generateBlackCatComment(latest, logs[1] || null);
         document.getElementById('catMoodTag').textContent = `モード: ${initialCat.mood}`;
@@ -429,10 +476,11 @@
 
       const listEl = document.getElementById('historyList');
       listEl.innerHTML = logs.map(item => {
-        const factor = item.declineFactor || 0.75;
-        const barMode = item.barMode || 'ハの字・深ストレッチ';
+        const useDecline = item.useDecline || 'yes';
+        const useBar = item.useBar || 'yes';
+        const factor = getActiveFactor(useDecline, item.declineFactor || 0.75);
         const totalReps = item.sets.reduce((a, b) => a + b, 0);
-        const vol = Math.round(calcEffectiveLoad(item.bodyWeight, item.addedWeight, factor) * totalReps);
+        const vol = Math.round(calcEffectiveLoad(item.bodyWeight, item.addedWeight, useDecline, factor) * totalReps);
         return `
           <div class="glass-card rounded-xl p-3.5 space-y-2">
             <div class="flex justify-between items-center">
@@ -458,7 +506,7 @@
             </div>
             <div class="flex flex-wrap gap-1.5 text-[10px]">
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">体重 ${item.bodyWeight}kg</span>
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">${barMode}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-rose-300">${getSetupLabel(useDecline, useBar)}</span>
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">張り: ${item.pump}</span>
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">胃腸: ${item.stomach}</span>
               <span class="px-2 py-0.5 rounded bg-slate-800 ${item.pain === 'なし' ? 'text-emerald-300' : 'text-amber-300'}">痛み: ${item.pain}</span>
@@ -473,8 +521,10 @@
       const date = document.getElementById('workoutDate').value;
       const bodyWeight = parseFloat(document.getElementById('bodyWeight').value) || 72.0;
       const addedWeight = parseFloat(document.getElementById('addedWeight').value) || 0;
+      const useDecline = document.getElementById('useDecline').value;
+      const useBar = document.getElementById('useBar').value;
       const declineFactor = parseFloat(document.getElementById('declineFactor').value) || 0.75;
-      const barMode = document.getElementById('barMode').value;
+
       const s1 = parseInt(document.getElementById('set1').value);
       const s2 = parseInt(document.getElementById('set2').value);
       const s3 = parseInt(document.getElementById('set3').value);
@@ -489,8 +539,9 @@
         date,
         bodyWeight,
         addedWeight,
+        useDecline,
+        useBar,
         declineFactor,
-        barMode,
         sets: [s1 || 0, s2 || 0, s3 || 0],
         pump: document.getElementById('pumpCondition').value,
         stomach: document.getElementById('stomachCondition').value,
